@@ -26,7 +26,7 @@ double calcDistance(Point p1, Point p2) {
   return sqrt(dx * dx + dy * dy);
 }
 
-bool isAhead(Point src, Point target, double curAngle) {
+double angleDelta(Point src, Point target, double curAngle) {
   double dot = src.x * target.x + src.y * target.y;
   double det = src.x * target.y - src.y * target.x;
   double targetAngle = atan2(det, dot);
@@ -36,11 +36,11 @@ bool isAhead(Point src, Point target, double curAngle) {
   if (curAngle < 0) {
     curAngle += 2 * PI;
   }
-  std::cout << "target angle " << targetAngle << std::endl;
-  std::cout << "cur angle " << curAngle << std::endl;
-  std::cout << "threshold " << IS_AHEAD_THRESHOLD << std::endl;
+  return targetAngle - curAngle;
+}
 
-  double delta = targetAngle - curAngle;
+bool isAhead(Point src, Point target, double curAngle) {
+  double delta = angleDelta(src, target, curAngle);
   return abs(delta) <= IS_AHEAD_THRESHOLD;
 }
 
@@ -48,22 +48,32 @@ void moveTank(Tank *tank) {
   Point pos = tank->GetPosition();
   Target target = tank->GetMoveTarget();
   if (!target.is_active) {
-    tank->Stop();
+    tank->Stop(false);
     return;
   }
   float dist = calcDistance(pos, target.coord);
   if (dist <= tank->GetSize()) {
-    tank->Stop();
+    tank->Stop(true);
     return;
   }
   if (!isAhead(pos, target.coord, tank->GetAngle())) {
-    tank->Stop();
+    tank->Stop(false);
     return;
   }
   tank->MoveTick();
 }
 
 void rotateTank(Tank *tank) {
+  Target target = tank->GetMoveTarget();
+  if (!target.is_active) {
+    std::cout << "tank's target is inactive" << std::endl;
+    return;
+  }
+  double delta = angleDelta(
+      tank->GetPosition(),
+      target.coord,
+      tank->GetAngle());
+  tank->Rotate(delta);
 }
 
 Observation Env::Reset() {
@@ -71,14 +81,31 @@ Observation Env::Reset() {
   return obs;
 }
 
+void printTank(Tank *tank) {
+  std::cout << "Tank:" << std::endl;
+  Point pos = tank->GetPosition();
+  std::cout << "  Position: (" << pos.x << ", " << pos.y << ")" << std::endl;
+  double angle = tank->GetAngle();
+  std::cout << "  Angle: " << (angle / PI) << "pi" << std::endl;
+  Target target = tank->GetMoveTarget();
+  std::cout << "  MoveTarget: (" << target.coord.x << ", " <<
+                target.coord.y << ") " << target.is_active << std::endl;
+}
+
 std::tuple<Observation, float, bool> Env::Step() {
-  Point pos = tank_.GetPosition();
-  std::cout << "Env::Step(); Position before: (" << pos.x << "," << pos.y << ")" << std::endl;
+  std::cout << "Env::Step(); Before" << std::endl;
+  printTank(&tank_);
+
   moveTank(&tank_);
-  pos = tank_.GetPosition();
-  std::cout << "Env::Step(); Position after: (" << pos.x << "," << pos.y << ")" << std::endl;
+  rotateTank(&tank_);
+
+  std::cout << "Env::Step(); After" << std::endl;
+  printTank(&tank_);
+  std::cout << "------------------" << std::endl;
+
   Observation obs{};
   float reward = 0.1;
   bool done = false;
+
   return std::make_tuple(obs, reward, done);
 }

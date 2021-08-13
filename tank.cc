@@ -3,9 +3,10 @@
 #include "point.h"
 #include "target.h"
 #include <math.h>
+// #include <algorithm>
 
 const double ACCELERATION = 0.1;
-const double ANGLE_ACCELERATION = 0.1;
+const double ANGLE_SPEED = 0.1;
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
 const double MAX_SPEED = 1.0;
@@ -30,9 +31,11 @@ Tank::Tank(
   std::cout << "constructing a tank" << std::endl;
 }
 
-void Tank::Stop() {
+void Tank::Stop(bool resetTarget) {
   speed_ = 0.;
-  move_target_ = NULL_TARGET;
+  if (resetTarget) {
+    move_target_ = NULL_TARGET;
+  }
 }
 
 void Tank::MoveTick() {
@@ -45,7 +48,13 @@ void Tank::MoveTick() {
 }
 
 void Tank::Rotate(double angle) {
+  std::cout << "Tank::Rotate(" << angle << ");" << std::endl;
   speed_ = 0.;
+  if (angle > 0) {
+    angle = std::min(angle, ANGLE_SPEED);
+  } else {
+    angle = std::max(angle, -ANGLE_SPEED);
+  }
   angle_ += angle;
 }
 

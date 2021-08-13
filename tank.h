@@ -8,7 +8,7 @@ class Tank {
         Point position,
         double angle
     );
-    void Stop();
+    void Stop(bool resetTarget);
     void MoveTick();
     void Rotate(double angle);
     float GetAngle();
