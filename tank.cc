@@ -1,5 +1,5 @@
-#include "Tank.h"
-#include "Point.h"
+#include "tank.h"
+#include "point.h"
 #include <iostream>
 
 Tank::Tank(
@@ -12,7 +12,7 @@ Tank::Tank(
     Point position,
     float angle,
     float hit_points
-) : 
+) :
     max_speed_(max_speed),
     acceleration_(acceleration),
     angle_acceleration_(angle_acceleration),

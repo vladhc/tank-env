@@ -1,4 +1,5 @@
-#include "Point.h"
+#pragma once
+#include "point.h"
 
 class Tank {
   public:
