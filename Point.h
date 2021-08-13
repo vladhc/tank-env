@@ -1,8 +1,6 @@
 #pragma once
 
-class Point {
-  public:
-    Point(float x, float y);
-  private:
-    float x_, y_;
+struct Point {
+  float x;
+  float y;
 };

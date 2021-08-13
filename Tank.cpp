@@ -9,7 +9,7 @@ Tank::Tank(
     float fire_range,
     float vision_range,
     int max_fire_cooldown,
-    Point *position,
+    Point position,
     float angle,
     float hit_points
 ) : 
@@ -32,6 +32,6 @@ Tank::Tank(
   std::cout << "constructing a tank" << std::endl;
 }
 
-void Tank::tick() {
-  std::cout << "Tank.tick()" << std::endl;
+void Tank::Tick() {
+  std::cout << "Tank.Tick()" << std::endl;
 }
