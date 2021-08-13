@@ -1,33 +1,28 @@
+#include <iostream>
 #include "tank.h"
 #include "point.h"
-#include <iostream>
+#include "target.h"
+
+const float ACCELERATION = 0.1;
+const float ANGLE_ACCELERATION = 0.1;
+const float FIRE_RANGE = 5.0;
+const float VISION_RANGE = 10.0;
+const float MAX_SPEED = 1.0;
+const int MAX_FIRE_COOLDOWN = 3;
+const int MAX_HITPOINTS = 100;
 
 Tank::Tank(
-    float max_speed,
-    float acceleration,
-    float angle_acceleration,
-    float fire_range,
-    float vision_range,
-    int max_fire_cooldown,
     Point position,
-    float angle,
-    float hit_points
+    float angle
 ) :
-    max_speed_(max_speed),
-    acceleration_(acceleration),
-    angle_acceleration_(angle_acceleration),
-    fire_range_(fire_range),
-    vision_range_(vision_range),
-    max_fire_cooldown_(max_fire_cooldown),
-
-    hit_points_(hit_points),
+    hit_points_(MAX_HITPOINTS),
     speed_(0.0),
     angle_(angle),
     position_(position),
     fire_cooldown_(0),
 
-    fire_target_(nullptr),
-    move_target_(nullptr)
+    fire_target_(Target{Point{0.0, 0.0}, false}),
+    move_target_(Target{Point{0.0, 0.0}, false})
 {
   std::cout << "constructing a tank" << std::endl;
 }
