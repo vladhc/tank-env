@@ -6,13 +6,20 @@ class Tank {
   public:
     Tank(
         Point position,
-        float angle
+        double angle
     );
-    void Tick();
+    void Stop();
+    void MoveTick();
+    void Rotate(double angle);
+    float GetAngle();
+    Point GetPosition();
+    Target GetMoveTarget();
+    void MoveTo(Point coord);
+    float GetSize();
   private:
     int hit_points_;
-    float speed_;
-    float angle_;
+    double speed_;
+    double angle_;
     Point position_;
     int fire_cooldown_;
 
