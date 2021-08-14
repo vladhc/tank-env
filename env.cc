@@ -76,8 +76,8 @@ void rotateTank(Tank *tank) {
   tank->Rotate(delta);
 }
 
-Observation Env::Reset() {
-  Observation obs{};
+double Env::Reset() {
+  double obs = tank_.GetAngle();
   return obs;
 }
 
@@ -92,7 +92,7 @@ void printTank(Tank *tank) {
                 target.coord.y << ") " << target.is_active << std::endl;
 }
 
-std::tuple<Observation, float, bool> Env::Step() {
+std::tuple<double, double, bool> Env::Step() {
   std::cout << "Env::Step(); Before" << std::endl;
   printTank(&tank_);
 
@@ -103,7 +103,7 @@ std::tuple<Observation, float, bool> Env::Step() {
   printTank(&tank_);
   std::cout << "------------------" << std::endl;
 
-  Observation obs{};
+  double obs = tank_.GetAngle();
   float reward = 0.1;
   bool done = false;
 

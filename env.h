@@ -1,14 +1,11 @@
 #include <tuple>
 #include "tank.h"
 
-struct Observation {
-};
-
 class Env {
   public:
     Env();
-    Observation Reset();
-    std::tuple<Observation, float, bool> Step();
+    double Reset();
+    std::tuple<double, double, bool> Step();
   private:
     Tank tank_;
 };
