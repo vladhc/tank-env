@@ -11,8 +11,9 @@ TEST(EnvTest, MoveTank) {
     Point{0.0, 0.0}, // position
     0 // angle
   );
-  tank.MoveTo(Point{5., 0});
-  int ticks = 20;
+  Point pt = Point{5., 0};
+  tank.MoveTo(pt);
+  int ticks = 200;
 
   // WHEN
   for (int i=0; i < ticks; i++) {
@@ -20,8 +21,8 @@ TEST(EnvTest, MoveTank) {
   }
 
   // THEN
-  EXPECT_NEAR(tank.GetPosition().x, 5., 0.1);
-  EXPECT_NEAR(tank.GetPosition().y, 0., 0.1);
+  EXPECT_NEAR(tank.GetPosition().x, pt.x, 0.1);
+  EXPECT_NEAR(tank.GetPosition().y, pt.y, 0.1);
   EXPECT_FALSE(tank.GetMoveTarget().is_active);
 }
 
@@ -32,7 +33,7 @@ TEST(EnvTest, RotateTankPI) {
     0 // angle
   );
   tank.MoveTo(Point{-5., 0});
-  int ticks = 20;
+  int ticks = 200;
 
   // WHEN
   for (int i=0; i < ticks; i++) {
@@ -51,7 +52,7 @@ TEST(EnvTest, TankReachesMoveTarget) {
   );
   Point targetPos = Point{-3., 2.};
   tank.MoveTo(targetPos);
-  int ticks = 20;
+  int ticks = 200;
 
   // WHEN
   for (int i=0; i < ticks; i++) {

@@ -11,6 +11,7 @@
 const double ARENA_SIZE = 10.;  // max-x, max-y
 const double PI = 3.14159265;
 const double IS_AHEAD_THRESHOLD = PI / 4;
+const double EPSILON = 0.0001;
 
 Env::Env() :
   tank_(
@@ -18,7 +19,11 @@ Env::Env() :
       PI / 2 // angle
   )
 {
-  tank_.MoveTo(Point{5., 0.});
+}
+
+Env::Env(Tank tank) :
+  tank_(tank)
+{
 }
 
 bool isAhead(Point src, Point target, double curAngle) {
@@ -34,7 +39,7 @@ void moveTank(Tank *tank) {
   }
   Point pos = tank->GetPosition();
   float dist = calcDistance(pos, target.coord);
-  if (dist <= tank->GetSize()) {
+  if (dist <= EPSILON) {
     tank->Stop(true);
     return;
   }
@@ -67,16 +72,14 @@ Observation Env::Reset() {
   return createObservation(tank_);
 }
 
-std::tuple<Observation, double, bool> Env::Step() {
-  std::cout << "Env::Step(); Before" << std::endl;
+std::tuple<Observation, double, bool> Env::Step(Action action) {
+  if (action.move) {
+    tank_.MoveTo(action.moveTarget);
+  }
   printTank(&tank_);
 
   moveTank(&tank_);
   rotateTank(&tank_);
-
-  std::cout << "Env::Step(); After" << std::endl;
-  printTank(&tank_);
-  std::cout << "------------------" << std::endl;
 
   Observation obs = createObservation(tank_);
   float reward = 0.1;

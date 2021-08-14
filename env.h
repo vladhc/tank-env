@@ -5,11 +5,17 @@ struct Observation {
   Tank tank;
 };
 
+struct Action {
+  bool move;
+  Point moveTarget;
+};
+
 class Env {
   public:
     Env();
+    Env(Tank t);
     Observation Reset();
-    std::tuple<Observation, double, bool> Step();
+    std::tuple<Observation, double, bool> Step(Action action);
   private:
     Tank tank_;
 };

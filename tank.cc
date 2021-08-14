@@ -6,11 +6,11 @@
 #include "target.h"
 #include "geom.h"
 
-const double ACCELERATION = 0.1;
-const double ANGLE_SPEED = 0.3;
+const double MAX_SPEED = 0.15;
+const double ACCELERATION = 0.02;
+const double ANGLE_SPEED = 0.1;
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
-const double MAX_SPEED = 1.0;
 const int MAX_FIRE_COOLDOWN = 3;
 const int MAX_HITPOINTS = 100;
 const double SIZE = 0.3;

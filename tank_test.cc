@@ -20,7 +20,7 @@ TEST(TankTest, Accelerate) {
 
   // THEN
   double speed = tank.GetSpeed();
-  EXPECT_NEAR(speed, ticks * 0.1, ABS_ERROR);
+  EXPECT_NEAR(speed, ticks * 0.02, ABS_ERROR);
 }
 
 TEST(TankTest, Stop) {
@@ -52,5 +52,5 @@ TEST(TankTest, Rotate) {
   tank.Rotate(0.5);
 
   // THEN
-  EXPECT_NEAR(tank.GetAngle(), 0.3, ABS_ERROR);
+  EXPECT_NEAR(tank.GetAngle(), 0.1, ABS_ERROR);
 }

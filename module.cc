@@ -23,7 +23,7 @@ PYBIND11_MODULE(tanks, m) {
         )
         .def("step",
             [](Env &env) {
-              auto t = env.Step();
+              auto t = env.Step(Action{true, Point{0., 0.}});
               Observation obs = std::get<0>(t);
               double reward = std::get<1>(t);
               bool done = std::get<2>(t);
