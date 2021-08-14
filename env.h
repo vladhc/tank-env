@@ -13,3 +13,7 @@ class Env {
   private:
     Tank tank_;
 };
+
+void moveTank(Tank *tank);
+
+void rotateTank(Tank *tank);

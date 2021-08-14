@@ -1,12 +1,13 @@
 #include <iostream>
+#include <math.h>
+#include <cmath>
 #include "tank.h"
 #include "point.h"
 #include "target.h"
-#include <math.h>
-// #include <algorithm>
+#include "geom.h"
 
 const double ACCELERATION = 0.1;
-const double ANGLE_SPEED = 0.1;
+const double ANGLE_SPEED = 0.3;
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
 const double MAX_SPEED = 1.0;
@@ -14,6 +15,8 @@ const int MAX_FIRE_COOLDOWN = 3;
 const int MAX_HITPOINTS = 100;
 const double SIZE = 0.3;
 const Target NULL_TARGET = Target{Point{0.0, 0.0}, false};
+const double PI = 3.14159265;
+const double EPSILON = 0.00001;
 
 Tank::Tank(
     Point position,
@@ -28,27 +31,29 @@ Tank::Tank(
     fire_target_(NULL_TARGET),
     move_target_(NULL_TARGET)
 {
-  std::cout << "constructing a tank" << std::endl;
 }
 
 void Tank::Stop(bool resetTarget) {
   speed_ = 0.;
-  if (resetTarget) {
+  if (resetTarget && move_target_.is_active) {
     move_target_ = NULL_TARGET;
   }
 }
 
 void Tank::MoveTick() {
-  std::cout << "Tank::MoveTick()" << std::endl;
   speed_ = std::min(speed_ + ACCELERATION, MAX_SPEED);
+  double distance = calcDistance(move_target_.coord, position_);
+  double to_travel = std::min(speed_, distance);
   position_ = Point{
-    position_.x + cos(angle_) * speed_,
-    position_.y + sin(angle_) * speed_
+    position_.x + cos(angle_) * to_travel,
+    position_.y + sin(angle_) * to_travel
   };
 }
 
 void Tank::Rotate(double angle) {
-  std::cout << "Tank::Rotate(" << angle << ");" << std::endl;
+  if (std::abs(angle) < EPSILON) {
+    return;
+  }
   speed_ = 0.;
   if (angle > 0) {
     angle = std::min(angle, ANGLE_SPEED);
@@ -60,6 +65,10 @@ void Tank::Rotate(double angle) {
 
 float Tank::GetAngle() {
   return angle_;
+}
+
+float Tank::GetSpeed() {
+  return speed_;
 }
 
 Point Tank::GetPosition() {
@@ -76,4 +85,17 @@ void Tank::MoveTo(Point coord) {
 
 float Tank::GetSize() {
   return SIZE;
+}
+
+void printTank(Tank *tank) {
+  std::cout << "<Tank";
+  Point pos = tank->GetPosition();
+  std::cout << " position=(" << pos.x << ", " << pos.y << ");";
+  double angle = tank->GetAngle();
+  std::cout << " angle=" << (angle / PI) << "pi;";
+  Target target = tank->GetMoveTarget();
+  std::cout << " speed=" << tank->GetSpeed() << "; ";
+  std::cout << " moveTarget: (" << target.coord.x << ", " <<
+                target.coord.y << ") is_active=" << target.is_active;
+  std::cout << ">" << std::endl;
 }

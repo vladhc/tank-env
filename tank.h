@@ -12,6 +12,7 @@ class Tank {
     void MoveTick();
     void Rotate(double angle);
     float GetAngle();
+    float GetSpeed();
     Point GetPosition();
     Target GetMoveTarget();
     void MoveTo(Point coord);
@@ -26,3 +27,5 @@ class Tank {
     Target fire_target_;
     Target move_target_;
 };
+
+void printTank(Tank *tank);
