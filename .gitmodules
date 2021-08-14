@@ -2,3 +2,6 @@
 	path = extern/pybind11
 	url = git@github.com:pybind/pybind11
 	branch = stable
+[submodule "extern/googletest"]
+	path = extern/googletest
+	url = git@github.com:google/googletest
