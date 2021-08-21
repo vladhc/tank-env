@@ -1,14 +1,14 @@
+#include <iostream>
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include "env.h"
-// #include <math.h>
-#include <cmath>
+#include "point.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-const double SCALE = 100;
+const double SCALE = 5;
 
 const int TANK_BODY_POINTS_COUNT = 5;
 const Point TANK_BODY_POINTS[TANK_BODY_POINTS_COUNT] = {
@@ -32,14 +32,31 @@ const Point TANK_TURRET_POINTS[TANK_TURRET_POINTS_COUNT] = {
 };
 const double TANK_LAYER_OFFSET = 0.1;
 
-void drawTank(Tank tank, SDL_Renderer* gRenderer) {
-  Point pos = tank.GetPosition();
-  double angle = tank.GetAngle();
-  double size = tank.GetSize();
+void drawArena(float size, SDL_Renderer* gRenderer) {
+  const Point border[5] = {
+    Point{-size, -size},
+    Point{-size, size},
+    Point{size, size},
+    Point{size, -size},
+    Point{-size, -size}
+  };
+  SDL_Point points[5];
+  for (int i=0; i < 5; i++) {
+    Point pt = border[i];
+    points[i] = SDL_Point{pt.x * SCALE, pt.y * SCALE};
+  }
+  SDL_SetRenderDrawColor(gRenderer, 0x73, 0x6E, 0x74, 0xFF);
+  SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
+}
+
+void drawTank(Tank* tank, SDL_Renderer* gRenderer) {
+  b2Vec2 pos = tank->GetPosition();
+  double angle = tank->GetAngle();
+  double size = tank->GetSize();
 
   // Move target
-  SDL_SetRenderDrawColor(gRenderer, 0x72, 0x72, 0x18, 0x80 );
-  Target target = tank.GetMoveTarget();
+  SDL_SetRenderDrawColor(gRenderer, 0x72, 0x72, 0x18, 0x80);
+  Target target = tank->GetMoveTarget();
   if (target.is_active) {
     SDL_RenderDrawLine(
       gRenderer,
@@ -97,6 +114,39 @@ void drawTank(Tank tank, SDL_Renderer* gRenderer) {
   SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
 }
 
+Action getAction() {
+  SDL_Event event;
+  Action action;
+
+  // SDL_Delay(TIME_STEP * 1000);
+  int timeout = TIME_STEP * 1000;
+
+  if (SDL_WaitEventTimeout(&event, timeout) == 0) {
+    return action;
+  }
+  if (event.type != SDL_KEYDOWN) {
+    return action;
+  }
+  switch (event.key.keysym.sym) {
+    case SDLK_w:
+      action.power = 1.0;
+      break;
+    case SDLK_s:
+      action.power = -1.0;
+      break;
+    case SDLK_d:
+      action.anglePower = 1.0;
+      break;
+    case SDLK_a:
+      action.anglePower = -1.0;
+      break;
+    case SDLK_x:
+      action.exit = true;
+      break;
+  }
+  return action;
+}
+
 int main() {
   if(SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -124,33 +174,30 @@ int main() {
   //Update screen
   SDL_RenderPresent(gRenderer);
 
-  Env env = Env(
-    Tank{
-      Point{5., 5.},
-      0
-    }
-  );
+  Env env = Env();
   Observation obs = env.Reset();
-  Action action = Action{true, Point{2., 1.}};
+  Action action = getAction();
 
-  for (int i=0; i < 150; i++) {
+  while(true) {
 
-    SDL_Delay(50);
     auto t = env.Step(action);
     Observation obs = std::get<0>(t);
-    Tank tank = obs.tank;
+    Tank* tank = obs.tank;
 
     // Render observation
     SDL_SetRenderDrawColor(gRenderer, 0xBC, 0xB6, 0x54, 0xFF );
     SDL_RenderClear(gRenderer);
+    drawArena(obs.arenaSize, gRenderer);
     drawTank(tank, gRenderer);
     SDL_RenderPresent(gRenderer);
 
     // Evaluate next action
-    action = Action{false, Point{0., 0.}};
+    action = getAction();
+    if (action.exit) {
+      break;
+    }
   }
 
-  SDL_Delay(2000);
   SDL_DestroyRenderer(gRenderer);
   SDL_DestroyWindow(window);
   SDL_Quit();

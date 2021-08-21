@@ -8,7 +8,13 @@ rm -f render
 
 echo "Building app for rendering"
 c++ render.cc geom.cc tank.cc env.cc \
-  -std=c++11 -w -lSDL2 -o render
+  -g -rdynamic \
+  -Iextern/box2d/include \
+  -std=c++11 -w \
+  -lSDL2 \
+  -lbox2d \
+  -Lextern/box2d/build/bin \
+  -o render
 
 echo "Building shared library"
 c++ -O3 -Wall -shared -std=c++11 \

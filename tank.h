@@ -1,28 +1,25 @@
 #pragma once
-#include "point.h"
 #include "target.h"
+#include "box2d/box2d.h"
 
 class Tank {
   public:
-    Tank(
-        Point position,
-        double angle
-    );
+    Tank(b2World* world);
+    ~Tank();
     void Stop(bool resetTarget);
-    void MoveTick();
-    void Rotate(double angle);
     float GetAngle();
     float GetSpeed();
-    Point GetPosition();
+    b2Vec2 GetPosition();
     Target GetMoveTarget();
-    void MoveTo(Point coord);
+    void MoveTo(b2Vec2 coord);
     float GetSize();
+    b2Body* GetBody();
+    void Drive(float anglePower, float power);
   private:
     int hit_points_;
     double speed_;
-    double angle_;
-    Point position_;
     int fire_cooldown_;
+    b2Body* body_;
 
     Target fire_target_;
     Target move_target_;

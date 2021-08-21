@@ -1,6 +1,8 @@
 #pragma once
-#include "point.h"
+#include "box2d/box2d.h"
 
-double calcDistance(Point p1, Point p2);
+float calcDistance(b2Vec2 p1, b2Vec2 p2);
 
-double angleDelta(Point src, Point target, double curAngle);
+float angleDelta(b2Vec2 src, b2Vec2 target, float curAngle);
+
+float abs2(float x);

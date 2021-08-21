@@ -1,24 +1,45 @@
+#include <iostream>
 #include <math.h>
 #include "geom.h"
-#include "point.h"
+#include "box2d/box2d.h"
 
-const double PI = 3.14159265;
+#define PI 3.14159265
 
-double calcDistance(Point p1, Point p2) {
-  double dx = p2.x - p1.x;
-  double dy = p2.y - p1.y;
+float calcDistance(b2Vec2 p1, b2Vec2 p2) {
+  float dx = p2.x - p1.x;
+  float dy = p2.y - p1.y;
   return sqrt(dx * dx + dy * dy);
 }
 
-double angleDelta(Point src, Point target, double curAngle) {
-  double dx = target.x - src.x;
-  double dy = target.y - src.y;
-  double targetAngle = atan2(dy, dx);
-  if (targetAngle < 0) {
+float angleDelta(b2Vec2 src, b2Vec2 target, float curAngle) {
+  float dx = target.x - src.x;
+  float dy = target.y - src.y;
+  float targetAngle = atan2(dy, dx);
+  while (targetAngle < 0) {
     targetAngle += 2 * PI;
   }
-  if (curAngle < 0) {
+  while (targetAngle > 2 * PI) {
+    targetAngle -= 2 * PI;
+  }
+  while (curAngle < 0) {
     curAngle += 2 * PI;
   }
-  return targetAngle - curAngle;
+  while (curAngle > 2.0) {
+    curAngle -= 2 * PI;
+  }
+  float delta = targetAngle - curAngle;
+  while (delta > PI) {
+    delta -= 2 * PI;
+  }
+  while (delta < -PI) {
+    delta += 2 * PI;
+  }
+  return delta;
+}
+
+float abs2(float x) {
+  if (x >= 0) {
+    return x;
+  }
+  return -x;
 }

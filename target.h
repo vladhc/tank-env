@@ -1,7 +1,7 @@
 #pragma once
-#include "point.h"
+#include "box2d/box2d.h"
 
 struct Target {
-  Point coord;
+  b2Vec2 coord;
   bool is_active;
 };

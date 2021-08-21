@@ -1,36 +1,46 @@
 #include <iostream>
 #include <math.h>
-#include <cmath>
 #include "tank.h"
-#include "point.h"
 #include "target.h"
 #include "geom.h"
+#include "box2d/box2d.h"
 
-const double MAX_SPEED = 0.15;
-const double ACCELERATION = 0.02;
-const double ANGLE_SPEED = 0.1;
+const float MAX_ANGULARY_VELOCITY = 1.0f;
+const float ANGLE_TORQUE = 200.0f;
+
+const float MAX_VELOCITY = 12.0f; // meters per second
+const double ACCELERATION = 200.0f;
+
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
 const int MAX_FIRE_COOLDOWN = 3;
 const int MAX_HITPOINTS = 100;
-const double SIZE = 0.3;
-const Target NULL_TARGET = Target{Point{0.0, 0.0}, false};
-const double PI = 3.14159265;
+const double SIZE = 6;
+const Target NULL_TARGET = Target{b2Vec2(0.0, 0.0), false};
 const double EPSILON = 0.00001;
 
-Tank::Tank(
-    Point position,
-    double angle
-) :
+Tank::Tank(b2World* world) :
     hit_points_(MAX_HITPOINTS),
     speed_(0.0),
-    angle_(angle),
-    position_(position),
     fire_cooldown_(0),
 
     fire_target_(NULL_TARGET),
     move_target_(NULL_TARGET)
 {
+  b2BodyDef bodyDef;
+  bodyDef.type = b2_dynamicBody;
+  bodyDef.position.Set(50.0f, 50.0f);
+
+  body_ = world->CreateBody(&bodyDef);
+
+  b2PolygonShape tankShape;
+  tankShape.SetAsBox(5.92f, 3.0f);
+
+  body_->CreateFixture(&tankShape, 1.0f);
+}
+
+Tank::~Tank() {
+  body_->GetWorld()->DestroyBody(body_);
 }
 
 void Tank::Stop(bool resetTarget) {
@@ -40,46 +50,23 @@ void Tank::Stop(bool resetTarget) {
   }
 }
 
-void Tank::MoveTick() {
-  speed_ = std::min(speed_ + ACCELERATION, MAX_SPEED);
-  double distance = calcDistance(move_target_.coord, position_);
-  double to_travel = std::min(speed_, distance);
-  position_ = Point{
-    position_.x + cos(angle_) * to_travel,
-    position_.y + sin(angle_) * to_travel
-  };
-}
-
-void Tank::Rotate(double angle) {
-  if (std::abs(angle) < EPSILON) {
-    return;
-  }
-  speed_ = 0.;
-  if (angle > 0) {
-    angle = std::min(angle, ANGLE_SPEED);
-  } else {
-    angle = std::max(angle, -ANGLE_SPEED);
-  }
-  angle_ += angle;
-}
-
 float Tank::GetAngle() {
-  return angle_;
+  return body_->GetAngle();
 }
 
 float Tank::GetSpeed() {
   return speed_;
 }
 
-Point Tank::GetPosition() {
-  return position_;
+b2Vec2 Tank::GetPosition() {
+  return body_->GetPosition();
 }
 
 Target Tank::GetMoveTarget() {
   return move_target_;
 }
 
-void Tank::MoveTo(Point coord) {
+void Tank::MoveTo(b2Vec2 coord) {
   move_target_ = Target{coord, true};
 }
 
@@ -87,14 +74,69 @@ float Tank::GetSize() {
   return SIZE;
 }
 
+b2Body* Tank::GetBody() {
+  return body_;
+}
+
+float min(float a, float b) {
+  if (a < b) {
+    return a;
+  }
+  return b;
+}
+
+float max(float a, float b) {
+  if (a > b) {
+    return a;
+  }
+  return b;
+}
+
+void Tank::Drive(float anglePower, float power) {
+  // Turn if needed
+  if (anglePower != 0.0f) {
+    float velocity = body_->GetAngularVelocity();
+
+    // Normalize anglePower
+    anglePower = min(anglePower, 1.0f);
+    anglePower = max(anglePower, -1.0f);
+
+    float torque = anglePower * ANGLE_TORQUE;
+    body_->ApplyAngularImpulse(torque, true);
+  }
+
+  // accelerate if needed
+  if (power != 0) {
+    b2Vec2 velocity = body_->GetLinearVelocity();
+
+    //if (velocity.Length() < MAX_VELOCITY) {
+    power = min(power, 1.0f);
+    power = max(power, -1.0f);
+
+    float acceleration = ACCELERATION * power;
+    // std::cout << "accelerating " << acceleration << std::endl;
+    b2Vec2 frontVec = body_->GetWorldVector(b2Vec2(1, 0));
+    body_->ApplyLinearImpulseToCenter(
+        b2Vec2(
+          frontVec.x * acceleration,
+          frontVec.y * acceleration
+        ),
+        true
+    );
+    // }
+  }
+}
+
 void printTank(Tank *tank) {
   std::cout << "<Tank";
-  Point pos = tank->GetPosition();
+  b2Vec2 pos = tank->GetPosition();
   std::cout << " position=(" << pos.x << ", " << pos.y << ");";
-  double angle = tank->GetAngle();
-  std::cout << " angle=" << (angle / PI) << "pi;";
+  std::cout << " angle=" << tank->GetAngle() << "pi;";
   Target target = tank->GetMoveTarget();
   std::cout << " speed=" << tank->GetSpeed() << "; ";
+
+  std::cout << " angVelocity=" << tank->GetBody()->GetAngularVelocity() << "; ";
+
   std::cout << " moveTarget: (" << target.coord.x << ", " <<
                 target.coord.y << ") is_active=" << target.is_active;
   std::cout << ">" << std::endl;
