@@ -21,7 +21,7 @@ Env::Env() {
   b2Vec2 gravity(0.0f, 0.0f);
   world_ = new b2World(gravity);
   tank_ = new Tank(world_);
-  strategicPoint = new StrategicPoint(world_, b2Vec2(2.0f, 3.0f));
+  strategicPoint = new StrategicPoint(world_, b2Vec2(40.0f, 50.0f));
 
   const float k_restitution = 0.1f;
 

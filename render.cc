@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "env.h"
 #include "point.h"
+#include "strategic_point.h"
 #include "keyboard_controller.h"
 
 //Screen dimension constants
@@ -50,23 +51,23 @@ void drawArena(float size, SDL_Renderer* gRenderer) {
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
 }
 
+void drawStrategicPoint(StrategicPoint* point, SDL_Renderer* gRenderer) {
+  b2Vec2 pos = point->GetPosition();
+  SDL_SetRenderDrawColor(gRenderer, 0x72, 0x72, 0x18, 0x80);
+  SDL_Rect rect{
+    pos.x * SCALE - 2,
+    pos.y * SCALE - 2,
+    4,
+    4
+  };
+
+  SDL_RenderFillRect(gRenderer, &rect);
+}
+
 void drawTank(Tank* tank, SDL_Renderer* gRenderer) {
   b2Vec2 pos = tank->GetPosition();
   double angle = tank->GetAngle();
   double size = tank->GetSize();
-
-  // Move target
-  SDL_SetRenderDrawColor(gRenderer, 0x72, 0x72, 0x18, 0x80);
-  Target target = tank->GetMoveTarget();
-  if (target.is_active) {
-    SDL_RenderDrawLine(
-      gRenderer,
-      pos.x * SCALE,
-      pos.y * SCALE,
-      target.coord.x * SCALE,
-      target.coord.y * SCALE
-    );
-  }
 
   SDL_Point points[TANK_BODY_POINTS_COUNT];
 
@@ -153,6 +154,7 @@ int main() {
     SDL_SetRenderDrawColor(gRenderer, 0xBC, 0xB6, 0x54, 0xFF );
     SDL_RenderClear(gRenderer);
     drawArena(obs.arenaSize, gRenderer);
+    drawStrategicPoint(obs.strategicPoint, gRenderer);
     drawTank(tank, gRenderer);
     SDL_RenderPresent(gRenderer);
 
