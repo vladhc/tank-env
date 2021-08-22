@@ -2,12 +2,13 @@
 #include <tuple>
 #include <math.h>
 #include <stdlib.h>
+#include "box2d/box2d.h"
 #include "tank.h"
 #include "env.h"
+#include "action.h"
 #include "geom.h"
-#include "box2d/box2d.h"
 
-const double ARENA_SIZE = 100.;  // meters. w = h = 2 * ARENA_SIZE
+const float ARENA_SIZE = 100.0f;  // meters. w = h = 2 * ARENA_SIZE
 const double PI = 3.14159265;
 const double IS_AHEAD_THRESHOLD = PI / 4;
 const double EPSILON = 0.0001;
@@ -20,7 +21,7 @@ Env::Env() {
   world_ = new b2World(gravity);
   tank_ = new Tank(world_);
 
-  const float k_restitution = 0.4f;
+  const float k_restitution = 0.1f;
 
   b2Body* ground;
   {
@@ -67,8 +68,8 @@ Env::Env() {
     jd.localAnchorA.SetZero();
     jd.localAnchorB = tank_->GetBody()->GetLocalCenter();
     jd.collideConnected = true;
-    jd.maxForce = 3000.0f;
-    jd.maxTorque = 3000.0f;
+    jd.maxForce = 6000.0f;
+    jd.maxTorque = 6000.0f;
 
     world_->CreateJoint(&jd);
   }

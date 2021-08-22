@@ -8,14 +8,14 @@
 const float MAX_ANGULARY_VELOCITY = 1.0f;
 const float ANGLE_TORQUE = 200.0f;
 
-const float MAX_VELOCITY = 12.0f; // meters per second
+const float MAX_VELOCITY = 22.0f;
 const double ACCELERATION = 200.0f;
 
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
 const int MAX_FIRE_COOLDOWN = 3;
 const int MAX_HITPOINTS = 100;
-const double SIZE = 6;
+const double SIZE = 5.92;
 const Target NULL_TARGET = Target{b2Vec2(0.0, 0.0), false};
 const double EPSILON = 0.00001;
 
@@ -94,9 +94,8 @@ float max(float a, float b) {
 
 void Tank::Drive(float anglePower, float power) {
   // Turn if needed
-  if (anglePower != 0.0f) {
-    float velocity = body_->GetAngularVelocity();
-
+  float angularVelocity = body_->GetAngularVelocity();
+  if (anglePower != 0.0f && abs(angularVelocity) < MAX_ANGULARY_VELOCITY) {
     // Normalize anglePower
     anglePower = min(anglePower, 1.0f);
     anglePower = max(anglePower, -1.0f);
@@ -106,10 +105,8 @@ void Tank::Drive(float anglePower, float power) {
   }
 
   // accelerate if needed
-  if (power != 0) {
-    b2Vec2 velocity = body_->GetLinearVelocity();
-
-    //if (velocity.Length() < MAX_VELOCITY) {
+  b2Vec2 velocity = body_->GetLinearVelocity();
+  if (power != 0 && velocity.Length() < MAX_VELOCITY) {
     power = min(power, 1.0f);
     power = max(power, -1.0f);
 

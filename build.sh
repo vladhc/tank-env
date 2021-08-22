@@ -7,7 +7,7 @@ rm -f tanks$EXT
 rm -f render
 
 echo "Building app for rendering"
-c++ render.cc geom.cc tank.cc env.cc \
+c++ render.cc geom.cc tank.cc env.cc keyboard_controller.cc \
   -g -rdynamic \
   -Iextern/box2d/include \
   -std=c++11 -w \
@@ -22,6 +22,7 @@ c++ -O3 -Wall -shared -std=c++11 \
   $(python-config --includes) \
   -o "tanks$EXT" \
   -Iextern/pybind11/include \
+  -Iextern/box2d/include \
   env.cc geom.cc module.cc tank.cc
 
 echo "Done"

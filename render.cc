@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "env.h"
 #include "point.h"
+#include "keyboard_controller.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 800;
@@ -114,38 +115,6 @@ void drawTank(Tank* tank, SDL_Renderer* gRenderer) {
   SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
 }
 
-Action getAction() {
-  SDL_Event event;
-  Action action;
-
-  // SDL_Delay(TIME_STEP * 1000);
-  int timeout = TIME_STEP * 1000;
-
-  if (SDL_WaitEventTimeout(&event, timeout) == 0) {
-    return action;
-  }
-  if (event.type != SDL_KEYDOWN) {
-    return action;
-  }
-  switch (event.key.keysym.sym) {
-    case SDLK_w:
-      action.power = 1.0;
-      break;
-    case SDLK_s:
-      action.power = -1.0;
-      break;
-    case SDLK_d:
-      action.anglePower = 1.0;
-      break;
-    case SDLK_a:
-      action.anglePower = -1.0;
-      break;
-    case SDLK_x:
-      action.exit = true;
-      break;
-  }
-  return action;
-}
 
 int main() {
   if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -167,19 +136,15 @@ int main() {
   SDL_Renderer* gRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   SDL_RenderClear(gRenderer);
 
-  // SDL_Surface* screenSurface = SDL_GetWindowSurface(window);
-  // SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
-  // SDL_UpdateWindowSurface( window );
-
   //Update screen
   SDL_RenderPresent(gRenderer);
 
   Env env = Env();
   Observation obs = env.Reset();
-  Action action = getAction();
+  KeyboardController keyController;
+  Action action = keyController.GetAction();
 
   while(true) {
-
     auto t = env.Step(action);
     Observation obs = std::get<0>(t);
     Tank* tank = obs.tank;
@@ -192,10 +157,11 @@ int main() {
     SDL_RenderPresent(gRenderer);
 
     // Evaluate next action
-    action = getAction();
-    if (action.exit) {
+    action = keyController.GetAction();
+    if (keyController.IsExit()) {
       break;
     }
+    SDL_Delay(TIME_STEP * 1000);
   }
 
   SDL_DestroyRenderer(gRenderer);
