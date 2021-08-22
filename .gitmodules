@@ -5,3 +5,6 @@
 [submodule "extern/googletest"]
 	path = extern/googletest
 	url = git@github.com:google/googletest
+[submodule "extern/box2d"]
+	path = extern/box2d
+	url = git@github.com:erincatto/box2d.git
