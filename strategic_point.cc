@@ -9,11 +9,14 @@ StrategicPoint::StrategicPoint(b2World* world, b2Vec2 position) {
 
   body = world->CreateBody(&bodyDef);
 
+  body->SetUserData(this);
+
   b2CircleShape shape;
   shape.m_radius = 0.5f;
 
   b2FixtureDef fixtureDef;
   fixtureDef.shape = &shape;
+  fixtureDef.isSensor = true;
 
   body->CreateFixture(&fixtureDef);
 }
@@ -24,6 +27,10 @@ StrategicPoint::~StrategicPoint() {
 
 Tank* StrategicPoint::GetOwner() {
   return owner;
+}
+
+void StrategicPoint::SetOwner(Tank* tank) {
+  owner = tank;
 }
 
 b2Vec2 StrategicPoint::GetPosition() {

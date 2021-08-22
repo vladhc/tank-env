@@ -13,6 +13,13 @@ struct Observation {
 
 const float TIME_STEP = 1.0f / 60.0f;
 
+class ContactListener : public b2ContactListener {
+  public:
+    ContactListener();
+    void BeginContact(b2Contact* contact);
+    void EndContact(b2Contact* contact);
+};
+
 class Env {
   public:
     Env();
@@ -24,6 +31,7 @@ class Env {
     Tank* tank_;
     b2World* world_;
     StrategicPoint* strategicPoint;
+    ContactListener* contactListener;
 };
 
 void moveTank(Tank *tank);

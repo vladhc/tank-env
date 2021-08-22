@@ -75,6 +75,9 @@ Env::Env() {
 
     world_->CreateJoint(&jd);
   }
+
+  contactListener = new ContactListener();
+  world_->SetContactListener(contactListener);
 }
 
 Env::~Env() {
@@ -127,4 +130,52 @@ std::tuple<Observation, double, bool> Env::Step(Action action) {
   bool done = false;
 
   return std::make_tuple(obs, reward, done);
+}
+
+
+ContactListener::ContactListener() {
+}
+
+StrategicPoint* GetStrategicPoint(b2Contact* contact) {
+  b2Fixture* fixtureA = contact->GetFixtureA();
+  if (fixtureA->IsSensor()) {
+    return (StrategicPoint*)( fixtureA->GetBody()->GetUserData() );
+  }
+  b2Fixture* fixtureB = contact->GetFixtureB();
+  if (fixtureB->IsSensor()) {
+    return (StrategicPoint*)( fixtureB->GetBody()->GetUserData() );
+  }
+  return NULL;
+}
+
+Tank* GetTank(b2Contact* contact) {
+  b2Fixture* fixtureA = contact->GetFixtureA();
+  if (!fixtureA->IsSensor()) {
+    return (Tank*)( fixtureA->GetBody()->GetUserData() );
+  }
+  b2Fixture* fixtureB = contact->GetFixtureB();
+  if (!fixtureB->IsSensor()) {
+    return (Tank*)( fixtureB->GetBody()->GetUserData() );
+  }
+  return NULL;
+}
+
+void ContactListener::BeginContact(b2Contact* contact) {
+  StrategicPoint* point = GetStrategicPoint(contact);
+  if (point == NULL) {
+    return;
+  }
+  Tank* tank = GetTank(contact);
+  if (tank == NULL) {
+    return;
+  }
+  point->SetOwner(tank);
+}
+
+void ContactListener::EndContact(b2Contact* contact) {
+  StrategicPoint* point = GetStrategicPoint(contact);
+  if (point == NULL) {
+    return;
+  }
+  point->SetOwner(NULL);
 }

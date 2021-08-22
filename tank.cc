@@ -32,6 +32,7 @@ Tank::Tank(b2World* world) :
   bodyDef.position.Set(50.0f, 50.0f);
 
   body_ = world->CreateBody(&bodyDef);
+  body_->SetUserData(this);
 
   b2PolygonShape tankShape;
   tankShape.SetAsBox(5.92f, 3.0f);

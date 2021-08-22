@@ -31,7 +31,7 @@ then
     -std=c++11 -w \
     -lSDL2 \
     -lbox2d \
-    -Lextern/box2d/build/bin \
+    -Lextern/box2d/build/src \
     -o render
   echo "Done"
 fi

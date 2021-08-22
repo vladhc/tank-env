@@ -7,6 +7,7 @@ class StrategicPoint {
     StrategicPoint(b2World* world, b2Vec2 position);
     ~StrategicPoint();
     Tank* GetOwner();
+    void SetOwner(Tank* tank);
     b2Vec2 GetPosition();
   private:
     b2Body* body;
