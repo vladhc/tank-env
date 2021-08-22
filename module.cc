@@ -50,7 +50,12 @@ PYBIND11_MODULE(tanks, m) {
 
               float* action = (float*)(actionArrInfo.ptr);
 
-              auto t = env.Step(Action{action[0], action[1]});
+              Action a{action[0], action[1]};
+              env.Step(a);
+              env.Step(a);
+              env.Step(a);
+              env.Step(a);
+              auto t = env.Step(a);
               Observation obs = std::get<0>(t);
               double reward = std::get<1>(t);
               bool done = std::get<2>(t);

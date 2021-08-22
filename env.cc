@@ -127,10 +127,11 @@ std::tuple<Observation, double, bool> Env::Step(Action action) {
 
   Observation obs = CreateObservation();
   float reward = 0.0f;
+  bool done = false;
   if (strategicPoint->GetOwner() == tank_) {
     reward = 1.0f;
+    done = true;
   }
-  bool done = false;
 
   return std::make_tuple(obs, reward, done);
 }

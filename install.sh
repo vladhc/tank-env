@@ -8,6 +8,13 @@ LIB_DIR="$ORIGIN_DIR/lib"
 
 mkdir -p "$LIB_DIR"
 
+echo "Installing SDL GFX library and dependencies for other libs"
+sudo apt install -y libsdl2-dev libsdl2-2.0-0 \
+                    libjpeg-dev libwebp-dev libtiff5-dev libsdl2-image-dev libsdl2-image-2.0-0 \
+                    libmikmod-dev libfishsound1-dev libsmpeg-dev liboggz2-dev libflac-dev libfluidsynth-dev libsdl2-mixer-dev libsdl2-mixer-2.0-0 \
+                    libfreetype6-dev libsdl2-ttf-dev libsdl2-ttf-2.0-0 \
+                    libx11-dev xorg-dev
+
 echo "Installing Box2D..."
 
 BOX2D_DIR="$ORIGIN_DIR/extern/box2d"
@@ -38,9 +45,3 @@ rm gtest-all.o
 rm gtest_main.o
 
 mv "$GTEST_DIR/libgtest.so" "$LIB_DIR"
-
-echo "Installing SDL GFX library"
-sudo apt install -y libsdl2-dev libsdl2-2.0-0 \
-                    libjpeg-dev libwebp-dev libtiff5-dev libsdl2-image-dev libsdl2-image-2.0-0 \
-                    libmikmod-dev libfishsound1-dev libsmpeg-dev liboggz2-dev libflac-dev libfluidsynth-dev libsdl2-mixer-dev libsdl2-mixer-2.0-0 \
-                    libfreetype6-dev libsdl2-ttf-dev libsdl2-ttf-2.0-0
