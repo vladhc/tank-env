@@ -8,6 +8,7 @@ rm -f render
 
 echo "Building app for rendering"
 c++ render.cc geom.cc tank.cc env.cc keyboard_controller.cc \
+  strategic_point.cc \
   -g -rdynamic \
   -Iextern/box2d/include \
   -std=c++11 -w \
@@ -23,6 +24,7 @@ c++ -O3 -Wall -shared -std=c++11 \
   -o "tanks$EXT" \
   -Iextern/pybind11/include \
   -Iextern/box2d/include \
-  env.cc geom.cc module.cc tank.cc
+  env.cc geom.cc module.cc tank.cc \
+  strategic_point.cc
 
 echo "Done"

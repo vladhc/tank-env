@@ -7,6 +7,7 @@
 #include "env.h"
 #include "action.h"
 #include "geom.h"
+#include "strategic_point.h"
 
 const float ARENA_SIZE = 100.0f;  // meters. w = h = 2 * ARENA_SIZE
 const double PI = 3.14159265;
@@ -20,6 +21,7 @@ Env::Env() {
   b2Vec2 gravity(0.0f, 0.0f);
   world_ = new b2World(gravity);
   tank_ = new Tank(world_);
+  strategicPoint = new StrategicPoint(world_, b2Vec2(2.0f, 3.0f));
 
   const float k_restitution = 0.1f;
 
@@ -77,6 +79,7 @@ Env::Env() {
 
 Env::~Env() {
   delete tank_;
+  delete strategicPoint;
   delete world_;
 }
 
@@ -101,26 +104,25 @@ void moveTank(Tank *tank) {
     tank->Stop(false);
     return;
   }
-
-  // speed_ = std::min(speed_ + ACCELERATION, MAX_SPEED);
 }
 
-Observation createObservation(Tank* tank) {
+Observation Env::CreateObservation() {
   return Observation {
-    tank,
-    ARENA_SIZE
+    tank_,
+    ARENA_SIZE,
+    strategicPoint,
   };
 }
 
 Observation Env::Reset() {
-  return createObservation(tank_);
+  return CreateObservation();
 }
 
 std::tuple<Observation, double, bool> Env::Step(Action action) {
   tank_->Drive(action.anglePower, action.power);
   world_->Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
 
-  Observation obs = createObservation(tank_);
+  Observation obs = CreateObservation();
   float reward = 0.1;
   bool done = false;
 
