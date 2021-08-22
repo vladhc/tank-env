@@ -20,34 +20,41 @@ do
   shift
 done
 
+SRC_COMMON="geom.cc tank.cc env.cc  strategic_point.cc"
+INCLUDE_COMMON="-Iextern/box2d/include"
+
 if $BUILD_TESTBED
 then
   rm -f render
   echo "Building Testbed"
-  c++ render.cc geom.cc tank.cc env.cc keyboard_controller.cc \
-    strategic_point.cc \
+  c++ $SRC_COMMON \
+    keyboard_controller.cc \
+    render.cc \
     -g -rdynamic \
-    -Iextern/box2d/include \
+    $INCLUDE_COMMON \
     -std=c++11 -w \
+    -Llib \
     -lSDL2 \
     -lbox2d \
-    -Lextern/box2d/build/src \
     -o render
   echo "Done"
 fi
 
 if $BUILD_PYMODULE
 then
-  EXT=$(python-config --extension-suffix)
-  rm -f tanks$EXT
+  FILENAME="tanks$(python-config --extension-suffix)"
+  rm -f $FILENAME
   echo "Building python shared library"
-  c++ -O3 -Wall -shared -std=c++11 \
+  c++ \
+    $SRC_COMMON \
+    module.cc \
+    -O3 -Wall -shared -std=c++11 \
     -fPIC \
     $(python-config --includes) \
-    -o "tanks$EXT" \
     -Iextern/pybind11/include \
-    -Iextern/box2d/include \
-    env.cc geom.cc module.cc tank.cc \
-    strategic_point.cc
+    $INCLUDE_COMMON \
+    -Llib \
+    -lbox2d \
+    -o "$FILENAME"
   echo "Done"
 fi

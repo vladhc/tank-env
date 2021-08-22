@@ -6,7 +6,7 @@
 namespace py = pybind11;
 
 py::array_t<double> convertObservation(Observation obs) {
-    double *ret = new double[9];
+    float *ret = new float[10];
     int idx = 0;
 
     // Arena
@@ -18,13 +18,15 @@ py::array_t<double> convertObservation(Observation obs) {
     ret[idx++] = normalizeAngle(obs.tank->GetAngle());
     ret[idx++] = obs.tank->GetBody()->GetLinearVelocity().x;
     ret[idx++] = obs.tank->GetBody()->GetLinearVelocity().y;
+    ret[idx++] = obs.tank->GetBody()->GetLinearVelocity().Length();
     ret[idx++] = obs.tank->GetBody()->GetAngularVelocity();
 
     // StrategicPoint
-    ret[idx++] = obs.strategicPoint->GetPosition().x;
-    ret[idx++] = obs.strategicPoint->GetPosition().y;
+    b2Vec2 pos = obs.tank->GetBody()->GetLocalPoint(obs.strategicPoint->GetPosition());
+    ret[idx++] = pos.Length();
+    ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 
-    return py::array_t<double>(9, ret);
+    return py::array_t<float>(10, ret);
 }
 
 PYBIND11_MODULE(tanks, m) {
@@ -37,8 +39,18 @@ PYBIND11_MODULE(tanks, m) {
             }
         )
         .def("step",
-            [](Env &env) {
-              auto t = env.Step(Action{0.0f, 0.0f});
+            [](Env &env, py::array_t<float> actionArr) {
+              py::buffer_info actionArrInfo = actionArr.request();
+              if (actionArrInfo.ndim != 1) {
+                throw std::runtime_error("Number of dimensions must be 1");
+              }
+              if (actionArrInfo.shape[0] != 2) {
+                throw std::runtime_error("Expected dimension[0] to be of size 2");
+              }
+
+              float* action = (float*)(actionArrInfo.ptr);
+
+              auto t = env.Step(Action{action[0], action[1]});
               Observation obs = std::get<0>(t);
               double reward = std::get<1>(t);
               bool done = std::get<2>(t);

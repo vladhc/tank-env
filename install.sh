@@ -3,11 +3,28 @@
 set -e  # exit when any command fails
 set -x  # show evaluation trace
 
-mkdir -p lib
+ORIGIN_DIR=$(pwd)
+LIB_DIR="$ORIGIN_DIR/lib"
+
+mkdir -p "$LIB_DIR"
+
+echo "Installing Box2D..."
+
+BOX2D_DIR="$ORIGIN_DIR/extern/box2d"
+cd "$BOX2D_DIR"
+# Copied from build.sh of the original repo.
+# The difference is -DCMAKE_POSITION_INDEPENDENT_CODE=ON flag
+rm -rf build
+mkdir build
+cd build
+cmake -DBOX2D_BUILD_DOCS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. # -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+cmake --build .
+
+mv "$BOX2D_DIR/build/src/libbox2d.a" "$LIB_DIR"
 
 echo "Installing GoogleTest library..."
 
-GTEST_DIR="extern/googletest/googletest"
+GTEST_DIR="$ORIGIN_DIR/extern/googletest/googletest"
 cd $GTEST_DIR
 
 c++ -Wall -std=c++11 -fPIC \
@@ -20,8 +37,7 @@ c++ -Wall -shared -o libgtest.so gtest-all.o gtest_main.o
 rm gtest-all.o
 rm gtest_main.o
 
-cd -
-mv "$GTEST_DIR/libgtest.so" "lib/"
+mv "$GTEST_DIR/libgtest.so" "$LIB_DIR"
 
 echo "Installing SDL GFX library"
 sudo apt install -y libsdl2-dev libsdl2-2.0-0 \

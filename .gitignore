@@ -2,3 +2,4 @@ tank-env
 env-test
 render
 *.so
+lib/*
