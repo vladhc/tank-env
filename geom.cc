@@ -11,30 +11,34 @@ float calcDistance(b2Vec2 p1, b2Vec2 p2) {
   return sqrt(dx * dx + dy * dy);
 }
 
+float normalizeAngle(float angle, bool plusMinusPi) {
+  if (plusMinusPi) {
+    while (angle > PI) {
+      angle -= 2 * PI;
+    }
+    while (angle < -PI) {
+      angle += 2 * PI;
+    }
+  } else {
+    while (angle < 0) {
+      angle += 2 * PI;
+    }
+    while (angle > 2 * PI) {
+      angle -= 2 * PI;
+    }
+  }
+  return angle;
+}
+
 float angleDelta(b2Vec2 src, b2Vec2 target, float curAngle) {
   float dx = target.x - src.x;
   float dy = target.y - src.y;
   float targetAngle = atan2(dy, dx);
-  while (targetAngle < 0) {
-    targetAngle += 2 * PI;
-  }
-  while (targetAngle > 2 * PI) {
-    targetAngle -= 2 * PI;
-  }
-  while (curAngle < 0) {
-    curAngle += 2 * PI;
-  }
-  while (curAngle > 2.0) {
-    curAngle -= 2 * PI;
-  }
+  targetAngle = normalizeAngle(targetAngle);
+  curAngle = normalizeAngle(curAngle);
+
   float delta = targetAngle - curAngle;
-  while (delta > PI) {
-    delta -= 2 * PI;
-  }
-  while (delta < -PI) {
-    delta += 2 * PI;
-  }
-  return delta;
+  return normalizeAngle(delta, true);
 }
 
 float abs2(float x) {

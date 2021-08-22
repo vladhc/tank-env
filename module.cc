@@ -1,15 +1,30 @@
 #include "env.h"
+#include "geom.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
 namespace py = pybind11;
 
 py::array_t<double> convertObservation(Observation obs) {
-    double *ret = new double[3];
-    ret[0] = obs.tank->GetPosition().x;
-    ret[1] = obs.tank->GetPosition().y;
-    ret[2] = obs.tank->GetAngle();
-    return py::array_t<double>(3, ret);
+    double *ret = new double[9];
+    int idx = 0;
+
+    // Arena
+    ret[idx++] = obs.arenaSize;
+
+    // Tank
+    ret[idx++] = obs.tank->GetPosition().x;
+    ret[idx++] = obs.tank->GetPosition().y;
+    ret[idx++] = normalizeAngle(obs.tank->GetAngle());
+    ret[idx++] = obs.tank->GetBody()->GetLinearVelocity().x;
+    ret[idx++] = obs.tank->GetBody()->GetLinearVelocity().y;
+    ret[idx++] = obs.tank->GetBody()->GetAngularVelocity();
+
+    // StrategicPoint
+    ret[idx++] = obs.strategicPoint->GetPosition().x;
+    ret[idx++] = obs.strategicPoint->GetPosition().y;
+
+    return py::array_t<double>(9, ret);
 }
 
 PYBIND11_MODULE(tanks, m) {

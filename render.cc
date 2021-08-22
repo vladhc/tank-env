@@ -148,6 +148,7 @@ int main() {
   while(true) {
     auto t = env.Step(action);
     Observation obs = std::get<0>(t);
+    float reward = std::get<1>(t);
     Tank* tank = obs.tank;
 
     // Render observation
