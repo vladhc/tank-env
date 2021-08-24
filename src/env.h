@@ -11,7 +11,7 @@ struct Observation {
   StrategicPoint* strategicPoint;
 };
 
-const float TIME_STEP = 1.0f / 60.0f;
+const float TIME_STEP = 1.0f / 15.0f;
 
 class ContactListener : public b2ContactListener {
   public:

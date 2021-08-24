@@ -5,8 +5,6 @@
 
 namespace py = pybind11;
 
-const int FRAMES_SKIPPED = 4;
-
 py::array_t<double> convertObservation(Observation obs) {
     float *ret = new float[10];
     int idx = 0;
@@ -52,11 +50,9 @@ PYBIND11_MODULE(tanks, m) {
 
               float* action = (float*)(actionArrInfo.ptr);
 
-              Action a{action[0], action[1]};
-              std::tuple<Observation, double, bool> t;
-              for (int i=0; i < FRAMES_SKIPPED; i++) {
-                t = env.Step(a);
-              }
+              std::tuple<Observation, double, bool> t = env.Step(
+                Action{action[0], action[1]}
+              );
               Observation obs = std::get<0>(t);
               double reward = std::get<1>(t);
               bool done = std::get<2>(t);

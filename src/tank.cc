@@ -6,10 +6,10 @@
 #include "box2d/box2d.h"
 
 const float MAX_ANGULARY_VELOCITY = 1.0f;
-const float ANGLE_TORQUE = 200.0f;
+const float ANGLE_TORQUE = 800.0f;
 
 const float MAX_VELOCITY = 22.0f;
-const double ACCELERATION = 200.0f;
+const double ACCELERATION = 800.0f;
 
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
@@ -17,7 +17,6 @@ const int MAX_FIRE_COOLDOWN = 3;
 const int MAX_HITPOINTS = 100;
 const double SIZE = 5.92;
 const Target NULL_TARGET = Target{b2Vec2(0.0, 0.0), false};
-const double EPSILON = 0.00001;
 
 Tank::Tank(b2World* world) :
     hit_points_(MAX_HITPOINTS),

@@ -14,8 +14,8 @@ const double PI = 3.14159265;
 const double IS_AHEAD_THRESHOLD = PI / 4;
 const double EPSILON = 0.0001;
 
-const int VELOCITY_ITERATIONS = 6;
-const int POSITION_ITERATIONS = 2;
+const int VELOCITY_ITERATIONS = 24;
+const int POSITION_ITERATIONS = 8;
 
 Env::Env() {
   b2Vec2 gravity(0.0f, 0.0f);
