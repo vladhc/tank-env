@@ -21,10 +21,7 @@ const Target NULL_TARGET = Target{b2Vec2(0.0, 0.0), false};
 Tank::Tank(b2World* world, b2Vec2 position, float angle) :
     hit_points_(MAX_HITPOINTS),
     speed_(0.0),
-    fire_cooldown_(0),
-
-    fire_target_(NULL_TARGET),
-    move_target_(NULL_TARGET)
+    fire_cooldown_(0)
 {
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;
@@ -44,13 +41,6 @@ Tank::~Tank() {
   body_->GetWorld()->DestroyBody(body_);
 }
 
-void Tank::Stop(bool resetTarget) {
-  speed_ = 0.;
-  if (resetTarget && move_target_.is_active) {
-    move_target_ = NULL_TARGET;
-  }
-}
-
 float Tank::GetAngle() {
   return body_->GetAngle();
 }
@@ -61,14 +51,6 @@ float Tank::GetSpeed() {
 
 b2Vec2 Tank::GetPosition() {
   return body_->GetPosition();
-}
-
-Target Tank::GetMoveTarget() {
-  return move_target_;
-}
-
-void Tank::MoveTo(b2Vec2 coord) {
-  move_target_ = Target{coord, true};
 }
 
 float Tank::GetSize() {
@@ -129,12 +111,7 @@ void printTank(Tank *tank) {
   b2Vec2 pos = tank->GetPosition();
   std::cout << " position=(" << pos.x << ", " << pos.y << ");";
   std::cout << " angle=" << tank->GetAngle() << "pi;";
-  Target target = tank->GetMoveTarget();
   std::cout << " speed=" << tank->GetSpeed() << "; ";
-
   std::cout << " angVelocity=" << tank->GetBody()->GetAngularVelocity() << "; ";
-
-  std::cout << " moveTarget: (" << target.coord.x << ", " <<
-                target.coord.y << ") is_active=" << target.is_active;
   std::cout << ">" << std::endl;
 }

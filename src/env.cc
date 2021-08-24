@@ -102,24 +102,6 @@ bool isAhead(b2Vec2 src, b2Vec2 target, double curAngle) {
   return abs2(delta) <= IS_AHEAD_THRESHOLD;
 }
 
-void moveTank(Tank *tank) {
-  Target target = tank->GetMoveTarget();
-  if (!target.is_active) {
-    tank->Stop(true);
-    return;
-  }
-  b2Vec2 pos = tank->GetPosition();
-  float dist = calcDistance(pos, target.coord);
-  if (dist <= EPSILON) {
-    tank->Stop(true);
-    return;
-  }
-  if (!isAhead(pos, target.coord, tank->GetAngle())) {
-    tank->Stop(false);
-    return;
-  }
-}
-
 std::vector<Observation> Env::CreateObservations() {
   std::vector<Observation> obs;
   for (Tank* hero : tanks) {
