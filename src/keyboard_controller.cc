@@ -33,9 +33,6 @@ void KeyboardController::Update() {
         case SDLK_a:
           left = true;
           break;
-        case SDLK_x:
-          exit = true;
-          break;
       }
     } else if (event.type == SDL_KEYUP) {
       switch (event.key.keysym.sym) {
@@ -51,10 +48,9 @@ void KeyboardController::Update() {
         case SDLK_a:
           left = false;
           break;
-        case SDLK_x:
-          exit = false;
-          break;
       }
+    } if (event.type == SDL_QUIT) {
+      exit = true;
     }
   }
 }
