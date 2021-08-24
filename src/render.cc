@@ -7,10 +7,12 @@
 #include "keyboard_controller.h"
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 1200;
+const int SCREEN_HEIGHT = 1200;
 
-const double SCALE = 5;
+const float SCALE = 5.0f;
+const int OFFSET_X = SCREEN_WIDTH / 2;
+const int OFFSET_Y = SCREEN_HEIGHT / 2;
 
 const int TANK_BODY_POINTS_COUNT = 5;
 const Point TANK_BODY_POINTS[TANK_BODY_POINTS_COUNT] = {
@@ -45,7 +47,10 @@ void drawArena(float size, SDL_Renderer* gRenderer) {
   SDL_Point points[5];
   for (int i=0; i < 5; i++) {
     Point pt = border[i];
-    points[i] = SDL_Point{pt.x * SCALE, pt.y * SCALE};
+    points[i] = SDL_Point{
+      pt.x * SCALE + OFFSET_X,
+      pt.y * SCALE + OFFSET_Y
+    };
   }
   SDL_SetRenderDrawColor(gRenderer, 0x73, 0x6E, 0x74, 0xFF);
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
@@ -55,8 +60,8 @@ void drawStrategicPoint(StrategicPoint* point, SDL_Renderer* gRenderer) {
   b2Vec2 pos = point->GetPosition();
   SDL_SetRenderDrawColor(gRenderer, 0x72, 0x72, 0x18, 0x80);
   SDL_Rect rect{
-    pos.x * SCALE - 2,
-    pos.y * SCALE - 2,
+    pos.x * SCALE - 2 + OFFSET_X,
+    pos.y * SCALE - 2 + OFFSET_Y,
     4,
     4
   };
@@ -79,8 +84,8 @@ void drawTank(Tank* tank, SDL_Renderer* gRenderer) {
       pt.y * size
     };
     points[i] = SDL_Point{
-      (pos.x + pt.x * cos(angle) - pt.y * sin(angle)) * SCALE,
-      (pos.y + pt.y * cos(angle) + pt.x * sin(angle)) * SCALE
+      (pos.x + pt.x * cos(angle) - pt.y * sin(angle)) * SCALE + OFFSET_X,
+      (pos.y + pt.y * cos(angle) + pt.x * sin(angle)) * SCALE + OFFSET_Y
     };
   }
   SDL_SetRenderDrawColor(gRenderer, 0x73, 0x6E, 0x74, 0xFF);
@@ -101,8 +106,8 @@ void drawTank(Tank* tank, SDL_Renderer* gRenderer) {
       TANK_TURRET_POINTS[i].y * size
     };
     turretPoints[i] = SDL_Point{
-      (pos.x + pt.x * cos(angle) - pt.y * sin(angle)) * SCALE,
-      (pos.y + pt.y * cos(angle) + pt.x * sin(angle)) * SCALE
+      (pos.x + pt.x * cos(angle) - pt.y * sin(angle)) * SCALE + OFFSET_X,
+      (pos.y + pt.y * cos(angle) + pt.x * sin(angle)) * SCALE + OFFSET_Y
     };
     turretPoints[i].y = turretPoints[i].y - int(TANK_LAYER_OFFSET * SCALE);
   }
