@@ -26,7 +26,8 @@ INCLUDE_COMMON="-Iextern/box2d/include"
 
 if $BUILD_TESTBED
 then
-  rm -f build/render
+  OUTPUT="build/testbed"
+  rm -f $OUTPUT
   echo "Building Testbed"
   c++ $SRC_COMMON \
     src/keyboard_controller.cc \
@@ -37,14 +38,14 @@ then
     -Llib \
     -lSDL2 \
     -lbox2d \
-    -o build/render
+    -o $OUTPUT
   echo "Done"
 fi
 
 if $BUILD_PYMODULE
 then
-  FILENAME="build/tanks$(python-config --extension-suffix)"
-  rm -f $FILENAME
+  OUTPUT="build/tanks$(python-config --extension-suffix)"
+  rm -f "$OUTPUT"
   echo "Building python shared library"
   c++ \
     $SRC_COMMON \
@@ -56,6 +57,6 @@ then
     $INCLUDE_COMMON \
     -Llib \
     -lbox2d \
-    -o "$FILENAME"
+    -o "$OUTPUT"
   echo "Done"
 fi

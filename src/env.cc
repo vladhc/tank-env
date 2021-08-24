@@ -20,8 +20,6 @@ const int POSITION_ITERATIONS = 8;
 Env::Env() {
   b2Vec2 gravity(0.0f, 0.0f);
   world_ = new b2World(gravity);
-  tank_ = new Tank(world_);
-  strategicPoint = new StrategicPoint(world_, b2Vec2(40.0f, 50.0f));
 
   const float k_restitution = 0.1f;
 
@@ -63,25 +61,38 @@ Env::Env() {
     ground->CreateFixture(&sd);
   }
 
-  {
-    b2FrictionJointDef jd;
-    jd.bodyA = ground;
-    jd.bodyB = tank_->GetBody();
-    jd.localAnchorA.SetZero();
-    jd.localAnchorB = tank_->GetBody()->GetLocalCenter();
-    jd.collideConnected = true;
-    jd.maxForce = 6000.0f;
-    jd.maxTorque = 6000.0f;
+  int y_coords[] = {-40, -20, 0, 20, 40};
+  int x_coords[] = {-70, 70};
+  int i = 0;
+  for (const int y : y_coords) {
+    for (const int x : x_coords) {
+      float angle = (x > 0) ? 0 : -3.14;
+      Tank* tank = new Tank(world_, b2Vec2(x, y), angle);
+      b2FrictionJointDef jd;
+      jd.bodyA = ground;
+      jd.bodyB = tank->GetBody();
+      jd.localAnchorA.SetZero();
+      jd.localAnchorB = tank->GetBody()->GetLocalCenter();
+      jd.collideConnected = true;
+      jd.maxForce = 6000.0f;
+      jd.maxTorque = 6000.0f;
 
-    world_->CreateJoint(&jd);
+      world_->CreateJoint(&jd);
+      tanks.push_back(tank);
+      i++;
+    }
   }
+
+  strategicPoint = new StrategicPoint(world_, b2Vec2(0.0f, 0.0f));
 
   contactListener = new ContactListener();
   world_->SetContactListener(contactListener);
 }
 
 Env::~Env() {
-  delete tank_;
+  for (Tank* tank : tanks) {
+    delete tank;
+  }
   delete strategicPoint;
   delete world_;
 }
@@ -109,33 +120,69 @@ void moveTank(Tank *tank) {
   }
 }
 
-Observation Env::CreateObservation() {
-  return Observation {
-    tank_,
-    ARENA_SIZE,
-    strategicPoint,
-  };
+std::vector<Observation> Env::CreateObservations() {
+  std::vector<Observation> obs;
+  for (Tank* hero : tanks) {
+    std::vector<Tank*> allies;
+    for (Tank* tank : tanks) {
+      if (tank != hero) {
+        allies.push_back(tank);
+      }
+    }
+    obs.push_back(Observation {
+      hero,
+      allies,
+      ARENA_SIZE,
+      strategicPoint,
+    });
+  }
+  return obs;
 }
 
-Observation Env::Reset() {
-  return CreateObservation();
+std::vector<Observation> Env::Reset() {
+  return CreateObservations();
 }
 
-std::tuple<Observation, double, bool> Env::Step(Action action) {
-  tank_->Drive(action.anglePower, action.power);
+std::tuple<
+  std::vector<Observation>,
+  std::vector<float>,
+  std::vector<char>
+> Env::Step(Action actions[]) {
+  for (unsigned int i=0; i < tanks.size(); i++) {
+    tanks[i]->Drive(actions[i].anglePower, actions[i].power);
+  }
   world_->Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
 
-  Observation obs = CreateObservation();
-  float reward = 0.0f;
-  bool done = false;
-  if (strategicPoint->GetOwner() == tank_) {
-    reward = 1.0f;
-    done = true;
+  std::vector<Observation> obs = CreateObservations();
+
+  std::vector<float> rewards;
+  std::vector<char> dones;
+
+  for (Tank* tank : tanks) {
+    float reward = 0.0f;
+    bool done = false;
+    if (strategicPoint->GetOwner() == tank) {
+      reward += 1.0f;
+      done = true;
+    }
+    rewards.push_back(reward);
+    dones.push_back(done);
   }
 
-  return std::make_tuple(obs, reward, done);
+  return std::make_tuple(obs, rewards, dones);
 }
 
+std::vector<Tank*> Env::GetTanks() {
+  return tanks;
+}
+
+StrategicPoint* Env::GetStrategicPoint() {
+  return strategicPoint;
+}
+
+float Env::GetArenaSize() {
+  return ARENA_SIZE;
+}
 
 ContactListener::ContactListener() {
 }

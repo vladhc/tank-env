@@ -4,7 +4,7 @@
 
 class Tank {
   public:
-    Tank(b2World* world);
+    Tank(b2World* world, b2Vec2 position, float angle);
     ~Tank();
     void Stop(bool resetTarget);
     float GetAngle();

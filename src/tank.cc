@@ -18,7 +18,7 @@ const int MAX_HITPOINTS = 100;
 const double SIZE = 5.92;
 const Target NULL_TARGET = Target{b2Vec2(0.0, 0.0), false};
 
-Tank::Tank(b2World* world) :
+Tank::Tank(b2World* world, b2Vec2 position, float angle) :
     hit_points_(MAX_HITPOINTS),
     speed_(0.0),
     fire_cooldown_(0),
@@ -28,7 +28,8 @@ Tank::Tank(b2World* world) :
 {
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;
-  bodyDef.position.Set(50.0f, 50.0f);
+  bodyDef.position = position;
+  bodyDef.angle = angle;
 
   body_ = world->CreateBody(&bodyDef);
   body_->SetUserData(this);
@@ -111,7 +112,6 @@ void Tank::Drive(float anglePower, float power) {
     power = max(power, -1.0f);
 
     float acceleration = ACCELERATION * power;
-    // std::cout << "accelerating " << acceleration << std::endl;
     b2Vec2 frontVec = body_->GetWorldVector(b2Vec2(1, 0));
     body_->ApplyLinearImpulseToCenter(
         b2Vec2(

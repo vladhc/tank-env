@@ -146,26 +146,32 @@ int main() {
   SDL_RenderPresent(gRenderer);
 
   Env env = Env();
-  Observation obs = env.Reset();
+  env.Reset();
   KeyboardController keyController;
-  Action action = keyController.GetAction();
+
+  Action actions[env.GetTanks().size()];
+  for (int i=0; i < env.GetTanks().size(); i++) {
+    actions[i] = Action{0.0f, 0.0f};
+  }
+  actions[0] = keyController.GetAction();
 
   while(true) {
-    auto t = env.Step(action);
-    Observation obs = std::get<0>(t);
-    float reward = std::get<1>(t);
-    Tank* tank = obs.tank;
-
-    // Render observation
+    // Render environment
     SDL_SetRenderDrawColor(gRenderer, 0xBC, 0xB6, 0x54, 0xFF );
     SDL_RenderClear(gRenderer);
-    drawArena(obs.arenaSize, gRenderer);
-    drawStrategicPoint(obs.strategicPoint, gRenderer);
-    drawTank(tank, gRenderer);
+    drawArena(env.GetArenaSize(), gRenderer);
+
+    std::vector<Tank*> tanks = env.GetTanks();
+    for (Tank* tank : tanks) {
+      drawTank(tank, gRenderer);
+    }
+
+    drawStrategicPoint(env.GetStrategicPoint(), gRenderer);
     SDL_RenderPresent(gRenderer);
 
     // Evaluate next action
-    action = keyController.GetAction();
+    auto t = env.Step(actions);
+    actions[0] = keyController.GetAction();
     if (keyController.IsExit()) {
       break;
     }

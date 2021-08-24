@@ -1,17 +1,19 @@
 #pragma once
 #include <tuple>
+#include <vector>
 #include "tank.h"
 #include "box2d/box2d.h"
 #include "action.h"
 #include "strategic_point.h"
 
+const float TIME_STEP = 1.0f / 15.0f;
+
 struct Observation {
-  Tank* tank;
+  Tank* hero;
+  std::vector<Tank*> allies;
   float arenaSize;
   StrategicPoint* strategicPoint;
 };
-
-const float TIME_STEP = 1.0f / 15.0f;
 
 class ContactListener : public b2ContactListener {
   public:
@@ -24,11 +26,19 @@ class Env {
   public:
     Env();
     ~Env();
-    Observation Reset();
-    std::tuple<Observation, double, bool> Step(Action action);
+    std::vector<Observation> Reset();
+    std::tuple<
+      std::vector<Observation>,
+      std::vector<float>,
+      std::vector<char>
+    > Step(Action actions[]);
+    std::vector<Tank*> GetTanks();
+    StrategicPoint* GetStrategicPoint();
+    float GetArenaSize();
   private:
-    Observation CreateObservation();
-    Tank* tank_;
+    std::vector<Observation> CreateObservations();
+    int tanksCount;
+    std::vector<Tank*> tanks;
     b2World* world_;
     StrategicPoint* strategicPoint;
     ContactListener* contactListener;
