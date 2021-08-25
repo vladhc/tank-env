@@ -13,6 +13,7 @@ class Tank : public GameObject {
     b2Body* GetBody();
     void Drive(float anglePower, float power);
     Bullet* Fire();
+    void TakeDamage(Bullet* bullet);
   private:
     int hit_points_;
     int fire_cooldown_;

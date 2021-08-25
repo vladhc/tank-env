@@ -120,6 +120,10 @@ Bullet* Tank::Fire() {
   );
 }
 
+void Tank::TakeDamage(Bullet* bullet) {
+  hit_points_ = max(0, hit_points_ - 30);
+}
+
 void printTank(Tank *tank) {
   std::cout << "<Tank";
   b2Vec2 pos = tank->GetPosition();

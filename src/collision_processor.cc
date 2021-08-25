@@ -1,45 +1,54 @@
+#include <iostream>
 #include "box2d/box2d.h"
 #include "tank.h"
 #include "collision_processor.h"
 #include "strategic_point.h"
 #include "game_object.h"
+#include "bullet.h"
 
 CollisionProcessor::CollisionProcessor(b2World* world) {
   world->SetContactListener(this);
+  createIterator = true;
 }
 
 CollisionProcessor::~CollisionProcessor() {
 }
 
-void CollisionProcessor::Step() {
+bool CollisionProcessor::PollEvent(TypedContact* c) {
+  if (createIterator) {
+    iter = contacts.begin();
+    createIterator = false;
+  }
+  if (iter >= contacts.end()) {
+    contacts.clear();
+    createIterator = true;
+    return false;
+  }
+  c = &(*iter);
+  iter++;
+  return true;
 }
 
-struct TypedContact {
-  Tank* tank;
-  StrategicPoint* point;
-};
-
 TypedContact ToTypedContact(b2Contact* contact) {
-  TypedContact c;
+  TypedContact c{};
 
-  GameObject* gameObjA = (GameObject*)contact->GetFixtureA()->GetBody()->GetUserData();
-  switch (gameObjA->type) {
-    case TANK:
-      c.tank = (Tank*)gameObjA;
-      break;
-    case STRATEGIC_POINT:
-      c.point = (StrategicPoint*)gameObjA;
-      break;
-  }
-
-  GameObject* gameObjB = (GameObject*)contact->GetFixtureB()->GetBody()->GetUserData();
-  switch (gameObjB->type) {
-    case TANK:
-      c.tank = (Tank*)gameObjB;
-      break;
-    case STRATEGIC_POINT:
-      c.point = (StrategicPoint*)gameObjB;
-      break;
+  b2Fixture* fixtures[] = {contact->GetFixtureA(), contact->GetFixtureB()};
+  for (b2Fixture* fixture : fixtures) {
+    GameObject* gameObj = (GameObject*)fixture->GetBody()->GetUserData();
+    if (gameObj == NULL) {
+      continue;
+    }
+    switch (gameObj->type) {
+      case TANK:
+        c.tank = (Tank*)gameObj;
+        break;
+      case STRATEGIC_POINT:
+        c.point = (StrategicPoint*)gameObj;
+        break;
+      case BULLET:
+        c.bullet = (Bullet*)gameObj;
+        break;
+    }
   }
 
   return c;
@@ -47,11 +56,13 @@ TypedContact ToTypedContact(b2Contact* contact) {
 
 void CollisionProcessor::BeginContact(b2Contact* contact) {
   TypedContact c = ToTypedContact(contact);
-  if (c.tank == NULL || c.point == NULL) {
+  if (c.tank == NULL) {
     return;
   }
-
-  c.point->SetOwner(c.tank);
+  if (c.point != NULL || c.bullet != NULL) {
+    contacts.push_back(c);
+    return;
+  }
 }
 
 void CollisionProcessor::EndContact(b2Contact* contact) {

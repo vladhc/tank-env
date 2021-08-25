@@ -27,6 +27,7 @@ Env::Env() {
   b2Body* ground;
   {
     b2BodyDef bd;
+    bd.type = b2_staticBody;
     bd.position.Set(0.0f, 0.0f);
     ground = world_->CreateBody(&bd);
 
@@ -139,7 +140,19 @@ std::tuple<
     }
   }
   world_->Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-  collisionProcessor->Step();
+  TypedContact c;
+
+  while (collisionProcessor->PollEvent(&c)) {
+    if (c.tank == NULL) {
+      continue;
+    }
+    if (c.point != NULL) {
+      c.point->SetOwner(c.tank);
+    }
+    if (c.bullet != NULL) {
+      delete c.bullet;
+    }
+  }
 
   std::vector<Observation> obs = CreateObservations();
 

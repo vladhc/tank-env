@@ -20,6 +20,7 @@ Bullet::Bullet(b2World* world, b2Vec2 firePosition, b2Vec2 fireDirection, GameOb
 
   b2FixtureDef fixtureDef;
   fixtureDef.shape = &shape;
+  fixtureDef.density = 1;
 
   body->CreateFixture(&fixtureDef);
   body->SetLinearVelocity(fireDirection);
