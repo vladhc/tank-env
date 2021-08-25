@@ -115,7 +115,7 @@ Bullet* Tank::Fire() {
   return new Bullet(
       body_->GetWorld(),
       pos,
-      body_->GetWorldVector(b2Vec2(30.0f, 0)),
+      body_->GetWorldVector(b2Vec2(3000.0f, 0)),
       this
   );
 }

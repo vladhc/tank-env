@@ -20,10 +20,10 @@ Bullet::Bullet(b2World* world, b2Vec2 firePosition, b2Vec2 fireDirection, GameOb
 
   b2FixtureDef fixtureDef;
   fixtureDef.shape = &shape;
-  fixtureDef.density = 1;
+  fixtureDef.density = 1000.0f;
 
   body->CreateFixture(&fixtureDef);
-  body->SetLinearVelocity(fireDirection);
+  body->ApplyLinearImpulseToCenter(fireDirection, true);
 }
 
 Bullet::~Bullet() {
