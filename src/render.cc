@@ -101,14 +101,11 @@ void drawTank(Tank* tank, SDL_Renderer* gRenderer) {
       (pos.y + pt.y * cos(angle) + pt.x * sin(angle)) * SCALE + OFFSET_Y
     };
   }
-  SDL_SetRenderDrawColor(gRenderer, 0x73, 0x6E, 0x74, 0xFF);
-  SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
-
-  // Light lines (body top)
-  for (int i=0; i < TANK_BODY_POINTS_COUNT; i++) {
-    points[i].y = points[i].y - int(TANK_LAYER_OFFSET * SCALE);
+  uint8 alpha = 0xFF;
+  if (!tank->IsAlive()) {
+    alpha = 0x88;
   }
-  SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, 0xFF);
+  SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, alpha);
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
 
   // Light lines (turret top)
@@ -124,13 +121,7 @@ void drawTank(Tank* tank, SDL_Renderer* gRenderer) {
     };
     turretPoints[i].y = turretPoints[i].y - int(TANK_LAYER_OFFSET * SCALE);
   }
-  SDL_SetRenderDrawColor(gRenderer, 0x73, 0x6E, 0x74, 0xFF);
-  SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
-
-  for (int i=0; i < TANK_TURRET_POINTS_COUNT; i++) {
-    turretPoints[i].y = turretPoints[i].y - int(TANK_LAYER_OFFSET * SCALE);
-  }
-  SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, 0xFF);
+  SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, alpha);
   SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
 }
 
@@ -154,6 +145,7 @@ int main() {
 
   SDL_Renderer* gRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
   SDL_RenderClear(gRenderer);
+  SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
 
   //Update screen
   SDL_RenderPresent(gRenderer);

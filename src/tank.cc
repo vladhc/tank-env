@@ -125,7 +125,6 @@ Bullet* Tank::Fire() {
 
 void Tank::TakeDamage(Bullet* bullet) {
   hitpoints = max(0, hitpoints - 30);
-  printTank(this);
 }
 
 bool Tank::IsAlive() {
