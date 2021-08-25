@@ -3,6 +3,7 @@
 #include "tank.h"
 #include "geom.h"
 #include "box2d/box2d.h"
+#include "game_object.h"
 
 const float MAX_ANGULARY_VELOCITY = 1.0f;
 const float ANGLE_TORQUE = 800.0f;
@@ -18,7 +19,8 @@ const double SIZE = 5.92;
 
 Tank::Tank(b2World* world, b2Vec2 position, float angle) :
     hit_points_(MAX_HITPOINTS),
-    fire_cooldown_(0)
+    fire_cooldown_(0),
+    GameObject(TANK)
 {
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;

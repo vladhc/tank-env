@@ -2,6 +2,7 @@
 #include "tank.h"
 #include "collision_processor.h"
 #include "strategic_point.h"
+#include "game_object.h"
 
 CollisionProcessor::CollisionProcessor(b2World* world) {
   world->SetContactListener(this);
@@ -13,45 +14,50 @@ CollisionProcessor::~CollisionProcessor() {
 void CollisionProcessor::Step() {
 }
 
-StrategicPoint* GetStrategicPoint(b2Contact* contact) {
-  b2Fixture* fixtureA = contact->GetFixtureA();
-  if (fixtureA->IsSensor()) {
-    return (StrategicPoint*)( fixtureA->GetBody()->GetUserData() );
+struct TypedContact {
+  Tank* tank;
+  StrategicPoint* point;
+};
+
+TypedContact ToTypedContact(b2Contact* contact) {
+  TypedContact c;
+
+  GameObject* gameObjA = (GameObject*)contact->GetFixtureA()->GetBody()->GetUserData();
+  switch (gameObjA->type) {
+    case TANK:
+      c.tank = (Tank*)gameObjA;
+      break;
+    case STRATEGIC_POINT:
+      c.point = (StrategicPoint*)gameObjA;
+      break;
   }
-  b2Fixture* fixtureB = contact->GetFixtureB();
-  if (fixtureB->IsSensor()) {
-    return (StrategicPoint*)( fixtureB->GetBody()->GetUserData() );
+
+  GameObject* gameObjB = (GameObject*)contact->GetFixtureB()->GetBody()->GetUserData();
+  switch (gameObjB->type) {
+    case TANK:
+      c.tank = (Tank*)gameObjB;
+      break;
+    case STRATEGIC_POINT:
+      c.point = (StrategicPoint*)gameObjB;
+      break;
   }
-  return NULL;
+
+  return c;
 }
 
-Tank* GetTank(b2Contact* contact) {
-  b2Fixture* fixtureA = contact->GetFixtureA();
-  if (!fixtureA->IsSensor()) {
-    return (Tank*)( fixtureA->GetBody()->GetUserData() );
-  }
-  b2Fixture* fixtureB = contact->GetFixtureB();
-  if (!fixtureB->IsSensor()) {
-    return (Tank*)( fixtureB->GetBody()->GetUserData() );
-  }
-  return NULL;
-}
 void CollisionProcessor::BeginContact(b2Contact* contact) {
-  StrategicPoint* point = GetStrategicPoint(contact);
-  if (point == NULL) {
+  TypedContact c = ToTypedContact(contact);
+  if (c.tank == NULL || c.point == NULL) {
     return;
   }
-  Tank* tank = GetTank(contact);
-  if (tank == NULL) {
-    return;
-  }
-  point->SetOwner(tank);
+
+  c.point->SetOwner(c.tank);
 }
 
 void CollisionProcessor::EndContact(b2Contact* contact) {
-  StrategicPoint* point = GetStrategicPoint(contact);
-  if (point == NULL) {
+  TypedContact c = ToTypedContact(contact);
+  if (c.point == NULL || c.tank == NULL) {
     return;
   }
-  point->SetOwner(NULL);
+  c.point->SetOwner(NULL);
 }

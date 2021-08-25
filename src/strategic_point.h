@@ -2,7 +2,7 @@
 #include "box2d/box2d.h"
 #include "tank.h"
 
-class StrategicPoint {
+class StrategicPoint : public GameObject {
   public:
     StrategicPoint(b2World* world, b2Vec2 position);
     ~StrategicPoint();

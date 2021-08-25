@@ -1,7 +1,8 @@
 #pragma once
 #include "box2d/box2d.h"
+#include "game_object.h"
 
-class Tank {
+class Tank : public GameObject {
   public:
     Tank(b2World* world, b2Vec2 position, float angle);
     ~Tank();

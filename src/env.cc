@@ -145,10 +145,10 @@ std::tuple<
   for (Tank* tank : tanks) {
     float reward = 0.0f;
     bool done = false;
-    if (strategicPoint->GetOwner() == tank) {
+    /*if (strategicPoint->GetOwner() == tank) {
       reward += 1.0f;
       done = true;
-    }
+    }*/
     rewards.push_back(reward);
     dones.push_back(done);
   }

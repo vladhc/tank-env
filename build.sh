@@ -22,6 +22,7 @@ done
 
 mkdir -p build
 SRC_COMMON="src/geom.cc src/tank.cc src/env.cc"
+SRC_COMMON="$SRC_COMMON src/game_object.cc"
 SRC_COMMON="$SRC_COMMON src/strategic_point.cc src/collision_processor.cc"
 INCLUDE_COMMON="-Iextern/box2d/include"
 

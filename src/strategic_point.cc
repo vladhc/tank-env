@@ -1,8 +1,12 @@
+#include <iostream>
 #include "box2d/box2d.h"
 #include "strategic_point.h"
 #include "tank.h"
+#include "game_object.h"
 
-StrategicPoint::StrategicPoint(b2World* world, b2Vec2 position) {
+StrategicPoint::StrategicPoint(b2World* world, b2Vec2 position) :
+  GameObject(STRATEGIC_POINT)
+{
   b2BodyDef bodyDef;
   bodyDef.type = b2_staticBody;
   bodyDef.position = position;
