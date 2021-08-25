@@ -1,7 +1,10 @@
+#include <iostream>
+#include <map>
 #include "env.h"
 #include "geom.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -47,13 +50,14 @@ void convertObservation(Observation obs, unsigned int idx, float* ret) {
     ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 }
 
-py::array_t<float> convertObservation(std::vector<Observation> obs) {
-  float *obsArray = new float[obs.size() * OBSERVATION_SIZE];
+py::dict convertObservation(std::vector<Observation> obs) {
+  py::dict obsMap;
   for (unsigned int i=0; i < obs.size(); i++) {
-    convertObservation(obs[i], i * OBSERVATION_SIZE, obsArray);
+    float *obsArray = new float[OBSERVATION_SIZE];
+    convertObservation(obs[i], 0, obsArray);
+    obsMap[py::int_(i)] = py::array_t<float>(OBSERVATION_SIZE, obsArray);
   }
-  long unsigned int shape[] = {obs.size(), OBSERVATION_SIZE};
-  return py::array_t<float>(shape, obsArray);
+  return obsMap;
 }
 
 PYBIND11_MODULE(tanks, m) {
@@ -66,20 +70,18 @@ PYBIND11_MODULE(tanks, m) {
             }
         )
         .def("step",
-            [](Env &env, py::array_t<float> actionArr) {
-              py::buffer_info actionArrInfo = actionArr.request();
-              if (actionArrInfo.ndim != 2) {
-                throw std::runtime_error("Number of dimensions must be 2");
-              }
-              if (actionArrInfo.shape[1] != 2) {
-                throw std::runtime_error("Expected dimension[1] to be of size 2");
-              }
-
-              float* action = (float*)(actionArrInfo.ptr);
-              int actionsCount = actionArrInfo.shape[0];
-              Action actions[actionsCount];
-              for (int i=0; i < actionsCount; i++) {
-                actions[i] = Action{action[i * 2], action[i * 2 + 1]};
+            [](Env &env, std::map<int, py::array_t<float>> actionsMap) {
+              Action actions[actionsMap.size()];
+              for (auto item : actionsMap) {
+                py::buffer_info actionArrInfo = item.second.request();
+                if (actionArrInfo.ndim != 1) {
+                  throw std::runtime_error("Number of dimensions must be 1");
+                }
+                if (actionArrInfo.shape[0] != 2) {
+                  throw std::runtime_error("Expected dimension[0] to be of size 2");
+                }
+                float* action = (float*)(actionArrInfo.ptr);
+                actions[item.first] = Action{action[0], action[1]};
               }
 
               std::tuple<
@@ -90,16 +92,19 @@ PYBIND11_MODULE(tanks, m) {
               std::vector<Observation> obs = std::get<0>(t);
               std::vector<float> rewards = std::get<1>(t);
               std::vector<char> dones = std::get<2>(t);
-              unsigned int tanksCount = 10;
-              bool *donesArr = new bool[tanksCount]; // new float[dones.size()];
-              for (unsigned int i=0; i < tanksCount; i++) {
-                donesArr[i] = dones[i];
+
+              py::dict rewardsMap;
+              py::dict donesMap;
+              for (unsigned int i=0; i < rewards.size(); i++) {
+                py::int_ idx = py::int_(i);
+                rewardsMap[idx] = rewards[i];
+                donesMap[idx] = (bool)(dones[i]);
               }
 
               return std::make_tuple(
                   convertObservation(obs),
-                  py::array_t<float>(rewards.size(), rewards.data()),
-                  py::array_t<bool>(tanksCount, donesArr),
+                  rewardsMap,
+                  donesMap,
                   py::dict()
               );
             }

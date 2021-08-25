@@ -19,9 +19,9 @@ const int MAX_HITPOINTS = 100;
 const float WIDTH = 5.92f;
 
 Tank::Tank(b2World* world, b2Vec2 position, float angle) :
+    GameObject(TANK),
     hitpoints(MAX_HITPOINTS),
-    fire_cooldown_(0),
-    GameObject(TANK)
+    fire_cooldown_(0)
 {
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;
