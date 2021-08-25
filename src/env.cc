@@ -8,6 +8,7 @@
 #include "action.h"
 #include "geom.h"
 #include "strategic_point.h"
+#include "collision_processor.h"
 
 const float ARENA_SIZE = 100.0f;  // meters. w = h = 2 * ARENA_SIZE
 const double PI = 3.14159265;
@@ -85,8 +86,7 @@ Env::Env() {
 
   strategicPoint = new StrategicPoint(world_, b2Vec2(0.0f, 0.0f));
 
-  contactListener = new ContactListener();
-  world_->SetContactListener(contactListener);
+  collisionProcessor = new CollisionProcessor(world_);
 }
 
 Env::~Env() {
@@ -94,6 +94,7 @@ Env::~Env() {
     delete tank;
   }
   delete strategicPoint;
+  delete collisionProcessor;
   delete world_;
 }
 
@@ -134,6 +135,7 @@ std::tuple<
     tanks[i]->Drive(actions[i].anglePower, actions[i].power);
   }
   world_->Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+  collisionProcessor->Step();
 
   std::vector<Observation> obs = CreateObservations();
 
@@ -164,51 +166,4 @@ StrategicPoint* Env::GetStrategicPoint() {
 
 float Env::GetArenaSize() {
   return ARENA_SIZE;
-}
-
-ContactListener::ContactListener() {
-}
-
-StrategicPoint* GetStrategicPoint(b2Contact* contact) {
-  b2Fixture* fixtureA = contact->GetFixtureA();
-  if (fixtureA->IsSensor()) {
-    return (StrategicPoint*)( fixtureA->GetBody()->GetUserData() );
-  }
-  b2Fixture* fixtureB = contact->GetFixtureB();
-  if (fixtureB->IsSensor()) {
-    return (StrategicPoint*)( fixtureB->GetBody()->GetUserData() );
-  }
-  return NULL;
-}
-
-Tank* GetTank(b2Contact* contact) {
-  b2Fixture* fixtureA = contact->GetFixtureA();
-  if (!fixtureA->IsSensor()) {
-    return (Tank*)( fixtureA->GetBody()->GetUserData() );
-  }
-  b2Fixture* fixtureB = contact->GetFixtureB();
-  if (!fixtureB->IsSensor()) {
-    return (Tank*)( fixtureB->GetBody()->GetUserData() );
-  }
-  return NULL;
-}
-
-void ContactListener::BeginContact(b2Contact* contact) {
-  StrategicPoint* point = GetStrategicPoint(contact);
-  if (point == NULL) {
-    return;
-  }
-  Tank* tank = GetTank(contact);
-  if (tank == NULL) {
-    return;
-  }
-  point->SetOwner(tank);
-}
-
-void ContactListener::EndContact(b2Contact* contact) {
-  StrategicPoint* point = GetStrategicPoint(contact);
-  if (point == NULL) {
-    return;
-  }
-  point->SetOwner(NULL);
 }

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <math.h>
 #include "tank.h"
-#include "target.h"
 #include "geom.h"
 #include "box2d/box2d.h"
 
@@ -16,11 +15,9 @@ const double VISION_RANGE = 10.0;
 const int MAX_FIRE_COOLDOWN = 3;
 const int MAX_HITPOINTS = 100;
 const double SIZE = 5.92;
-const Target NULL_TARGET = Target{b2Vec2(0.0, 0.0), false};
 
 Tank::Tank(b2World* world, b2Vec2 position, float angle) :
     hit_points_(MAX_HITPOINTS),
-    speed_(0.0),
     fire_cooldown_(0)
 {
   b2BodyDef bodyDef;
@@ -43,10 +40,6 @@ Tank::~Tank() {
 
 float Tank::GetAngle() {
   return body_->GetAngle();
-}
-
-float Tank::GetSpeed() {
-  return speed_;
 }
 
 b2Vec2 Tank::GetPosition() {
@@ -111,7 +104,8 @@ void printTank(Tank *tank) {
   b2Vec2 pos = tank->GetPosition();
   std::cout << " position=(" << pos.x << ", " << pos.y << ");";
   std::cout << " angle=" << tank->GetAngle() << "pi;";
-  std::cout << " speed=" << tank->GetSpeed() << "; ";
+  b2Vec2 velocity = tank->GetBody()->GetLinearVelocity();
+  std::cout << " velocity=(" << velocity.x << ", " << velocity.y << "); ";
   std::cout << " angVelocity=" << tank->GetBody()->GetAngularVelocity() << "; ";
   std::cout << ">" << std::endl;
 }

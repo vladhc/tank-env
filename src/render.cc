@@ -7,10 +7,10 @@
 #include "keyboard_controller.h"
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 1200;
-const int SCREEN_HEIGHT = 1200;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
 
-const float SCALE = 5.0f;
+const float SCALE = 2.5f;
 const int OFFSET_X = SCREEN_WIDTH / 2;
 const int OFFSET_Y = SCREEN_HEIGHT / 2;
 
@@ -139,7 +139,7 @@ int main() {
     return 1;
   }
 
-  SDL_Renderer* gRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  SDL_Renderer* gRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
   SDL_RenderClear(gRenderer);
 
   //Update screen
