@@ -155,10 +155,10 @@ std::tuple<
 
   while (collisionProcessor->PollEvent(&c)) {
     if (c.bullet != NULL) {
+      if (c.tank != NULL) {
+        c.tank->TakeDamage(c.bullet);
+      }
       deleteBullet(c.bullet);
-    }
-    if (c.tank == NULL) {
-      continue;
     }
     if (c.point != NULL) {
       c.point->SetOwner(c.tank);

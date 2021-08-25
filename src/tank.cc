@@ -19,7 +19,7 @@ const int MAX_HITPOINTS = 100;
 const float WIDTH = 5.92f;
 
 Tank::Tank(b2World* world, b2Vec2 position, float angle) :
-    hit_points_(MAX_HITPOINTS),
+    hitpoints(MAX_HITPOINTS),
     fire_cooldown_(0),
     GameObject(TANK)
 {
@@ -72,6 +72,9 @@ float max(float a, float b) {
 }
 
 void Tank::Drive(float anglePower, float power) {
+  if (!IsAlive()) {
+    return;
+  }
   // Turn if needed
   float angularVelocity = body_->GetAngularVelocity();
   if (anglePower != 0.0f && abs(angularVelocity) < MAX_ANGULARY_VELOCITY) {
@@ -106,7 +109,7 @@ void Tank::Drive(float anglePower, float power) {
 }
 
 Bullet* Tank::Fire() {
-  if (fire_cooldown_ > 0) {
+  if (fire_cooldown_ > 0 || !IsAlive()) {
     return NULL;
   }
   fire_cooldown_ += MAX_FIRE_COOLDOWN;
@@ -121,11 +124,21 @@ Bullet* Tank::Fire() {
 }
 
 void Tank::TakeDamage(Bullet* bullet) {
-  hit_points_ = max(0, hit_points_ - 30);
+  hitpoints = max(0, hitpoints - 30);
+  printTank(this);
+}
+
+bool Tank::IsAlive() {
+  return hitpoints > 0;
+}
+
+int Tank::GetHitpoints() {
+  return hitpoints;
 }
 
 void printTank(Tank *tank) {
   std::cout << "<Tank";
+  std::cout << " hitPoints=" << tank->GetHitpoints() << ";";
   b2Vec2 pos = tank->GetPosition();
   std::cout << " position=(" << pos.x << ", " << pos.y << ");";
   std::cout << " angle=" << tank->GetAngle() << "pi;";
