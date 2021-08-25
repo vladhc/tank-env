@@ -8,10 +8,10 @@
 #include "keyboard_controller.h"
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 1200;
+const int SCREEN_HEIGHT = 1200;
 
-const float SCALE = 2.5f;
+const float SCALE = 5.0f;
 const int OFFSET_X = SCREEN_WIDTH / 2;
 const int OFFSET_Y = SCREEN_HEIGHT / 2;
 

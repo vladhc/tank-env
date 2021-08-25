@@ -110,7 +110,7 @@ Bullet* Tank::Fire() {
     return NULL;
   }
   fire_cooldown_ += MAX_FIRE_COOLDOWN;
-  b2Vec2 pos = body_->GetWorldVector(b2Vec2(WIDTH, 0));
+  b2Vec2 pos = body_->GetWorldVector(b2Vec2(WIDTH + 0.15f, 0));
   pos += body_->GetPosition();
   return new Bullet(
       body_->GetWorld(),

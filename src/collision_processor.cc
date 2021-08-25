@@ -14,7 +14,7 @@ CollisionProcessor::CollisionProcessor(b2World* world) {
 CollisionProcessor::~CollisionProcessor() {
 }
 
-bool CollisionProcessor::PollEvent(TypedContact* c) {
+bool CollisionProcessor::PollEvent(TypedContact* ptr) {
   if (createIterator) {
     iter = contacts.begin();
     createIterator = false;
@@ -24,13 +24,13 @@ bool CollisionProcessor::PollEvent(TypedContact* c) {
     createIterator = true;
     return false;
   }
-  c = &(*iter);
+  *ptr = *iter;
   iter++;
   return true;
 }
 
 TypedContact ToTypedContact(b2Contact* contact) {
-  TypedContact c{};
+  TypedContact c{NULL, NULL, NULL};
 
   b2Fixture* fixtures[] = {contact->GetFixtureA(), contact->GetFixtureB()};
   for (b2Fixture* fixture : fixtures) {
@@ -56,13 +56,7 @@ TypedContact ToTypedContact(b2Contact* contact) {
 
 void CollisionProcessor::BeginContact(b2Contact* contact) {
   TypedContact c = ToTypedContact(contact);
-  if (c.tank == NULL) {
-    return;
-  }
-  if (c.point != NULL || c.bullet != NULL) {
-    contacts.push_back(c);
-    return;
-  }
+  contacts.push_back(c);
 }
 
 void CollisionProcessor::EndContact(b2Contact* contact) {

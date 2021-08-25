@@ -39,6 +39,7 @@ class Env {
     b2World* world_;
     StrategicPoint* strategicPoint;
     CollisionProcessor* collisionProcessor;
+    void deleteBullet(Bullet* bullet);
 };
 
 void moveTank(Tank *tank);

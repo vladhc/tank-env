@@ -125,6 +125,17 @@ std::vector<Observation> Env::Reset() {
   return CreateObservations();
 }
 
+void Env::deleteBullet(Bullet* bullet) {
+  for (auto it=bullets.begin(); it != bullets.end(); it++) {
+    Bullet* curBullet = *it;
+    if (curBullet == bullet) {
+      bullets.erase(it);
+      delete bullet;
+      return;
+    }
+  }
+}
+
 std::tuple<
   std::vector<Observation>,
   std::vector<float>,
@@ -143,14 +154,14 @@ std::tuple<
   TypedContact c;
 
   while (collisionProcessor->PollEvent(&c)) {
+    if (c.bullet != NULL) {
+      deleteBullet(c.bullet);
+    }
     if (c.tank == NULL) {
       continue;
     }
     if (c.point != NULL) {
       c.point->SetOwner(c.tank);
-    }
-    if (c.bullet != NULL) {
-      delete c.bullet;
     }
   }
 
