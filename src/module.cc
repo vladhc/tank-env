@@ -77,11 +77,11 @@ PYBIND11_MODULE(tanks, m) {
                 if (actionArrInfo.ndim != 1) {
                   throw std::runtime_error("Number of dimensions must be 1");
                 }
-                if (actionArrInfo.shape[0] != 2) {
-                  throw std::runtime_error("Expected dimension[0] to be of size 2");
+                if (actionArrInfo.shape[0] != 3) {
+                  throw std::runtime_error("Expected dimension[0] to be of size 3");
                 }
                 float* action = (float*)(actionArrInfo.ptr);
-                actions[item.first] = Action{action[0], action[1]};
+                actions[item.first] = Action{action[0], action[1], action[2] > 0.5};
               }
 
               std::tuple<
