@@ -93,14 +93,12 @@ Env::~Env() {
   for (Tank* tank : tanks) {
     delete tank;
   }
+  for (Bullet* bullet : bullets) {
+    delete bullet;
+  }
   delete strategicPoint;
   delete collisionProcessor;
   delete world_;
-}
-
-bool isAhead(b2Vec2 src, b2Vec2 target, double curAngle) {
-  double delta = angleDelta(src, target, curAngle);
-  return abs2(delta) <= IS_AHEAD_THRESHOLD;
 }
 
 std::vector<Observation> Env::CreateObservations() {
@@ -133,6 +131,12 @@ std::tuple<
 > Env::Step(Action actions[]) {
   for (unsigned int i=0; i < tanks.size(); i++) {
     tanks[i]->Drive(actions[i].anglePower, actions[i].power);
+    if (actions[i].fire) {
+      Bullet* bullet = tanks[i]->Fire();
+      if (bullet != NULL) {
+        bullets.push_back(bullet);
+      }
+    }
   }
   world_->Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
   collisionProcessor->Step();
@@ -145,10 +149,9 @@ std::tuple<
   for (Tank* tank : tanks) {
     float reward = 0.0f;
     bool done = false;
-    /*if (strategicPoint->GetOwner() == tank) {
+    if (strategicPoint->GetOwner() == tank) {
       reward += 1.0f;
-      done = true;
-    }*/
+    }
     rewards.push_back(reward);
     dones.push_back(done);
   }
@@ -158,6 +161,10 @@ std::tuple<
 
 std::vector<Tank*> Env::GetTanks() {
   return tanks;
+}
+
+std::vector<Bullet*> Env::GetBullets() {
+  return bullets;
 }
 
 StrategicPoint* Env::GetStrategicPoint() {

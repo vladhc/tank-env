@@ -1,6 +1,7 @@
 #pragma once
 #include "box2d/box2d.h"
 #include "game_object.h"
+#include "bullet.h"
 
 class Tank : public GameObject {
   public:
@@ -11,6 +12,7 @@ class Tank : public GameObject {
     float GetSize();
     b2Body* GetBody();
     void Drive(float anglePower, float power);
+    Bullet* Fire();
   private:
     int hit_points_;
     int fire_cooldown_;

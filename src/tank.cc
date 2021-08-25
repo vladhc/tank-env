@@ -1,9 +1,10 @@
 #include <iostream>
 #include <math.h>
+#include "box2d/box2d.h"
 #include "tank.h"
 #include "geom.h"
-#include "box2d/box2d.h"
 #include "game_object.h"
+#include "bullet.h"
 
 const float MAX_ANGULARY_VELOCITY = 1.0f;
 const float ANGLE_TORQUE = 800.0f;
@@ -13,9 +14,9 @@ const double ACCELERATION = 800.0f;
 
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
-const int MAX_FIRE_COOLDOWN = 3;
+const int MAX_FIRE_COOLDOWN = 5;
 const int MAX_HITPOINTS = 100;
-const double SIZE = 5.92;
+const float WIDTH = 5.92f;
 
 Tank::Tank(b2World* world, b2Vec2 position, float angle) :
     hit_points_(MAX_HITPOINTS),
@@ -31,7 +32,7 @@ Tank::Tank(b2World* world, b2Vec2 position, float angle) :
   body_->SetUserData(this);
 
   b2PolygonShape tankShape;
-  tankShape.SetAsBox(5.92f, 3.0f);
+  tankShape.SetAsBox(WIDTH, 3.0f);
 
   body_->CreateFixture(&tankShape, 1.0f);
 }
@@ -49,7 +50,7 @@ b2Vec2 Tank::GetPosition() {
 }
 
 float Tank::GetSize() {
-  return SIZE;
+  return WIDTH;
 }
 
 b2Body* Tank::GetBody() {
@@ -97,8 +98,26 @@ void Tank::Drive(float anglePower, float power) {
         ),
         true
     );
-    // }
   }
+
+  if (fire_cooldown_ > 0) {
+    fire_cooldown_--;
+  }
+}
+
+Bullet* Tank::Fire() {
+  if (fire_cooldown_ > 0) {
+    return NULL;
+  }
+  fire_cooldown_ += MAX_FIRE_COOLDOWN;
+  b2Vec2 pos = body_->GetWorldVector(b2Vec2(WIDTH, 0));
+  pos += body_->GetPosition();
+  return new Bullet(
+      body_->GetWorld(),
+      pos,
+      body_->GetWorldVector(b2Vec2(30.0f, 0)),
+      this
+  );
 }
 
 void printTank(Tank *tank) {

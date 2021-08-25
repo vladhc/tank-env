@@ -10,6 +10,7 @@ class KeyboardController {
     bool right;
     bool up;
     bool down;
+    bool fire;
     bool exit;
     void Update();
 };

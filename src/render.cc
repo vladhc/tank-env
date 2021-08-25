@@ -4,6 +4,7 @@
 #include "env.h"
 #include "point.h"
 #include "strategic_point.h"
+#include "bullet.h"
 #include "keyboard_controller.h"
 
 //Screen dimension constants
@@ -66,6 +67,18 @@ void drawStrategicPoint(StrategicPoint* point, SDL_Renderer* gRenderer) {
     4
   };
 
+  SDL_RenderFillRect(gRenderer, &rect);
+}
+
+void drawBullet(Bullet* bullet, SDL_Renderer* gRenderer) {
+  b2Vec2 pos = bullet->GetBody()->GetPosition();
+  SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x72, 0x18, 0xFF);
+  SDL_Rect rect{
+    pos.x * SCALE - 5 + OFFSET_X,
+    pos.y * SCALE - 5 + OFFSET_Y,
+    10,
+    10
+  };
   SDL_RenderFillRect(gRenderer, &rect);
 }
 
@@ -164,6 +177,9 @@ int main() {
     std::vector<Tank*> tanks = env.GetTanks();
     for (Tank* tank : tanks) {
       drawTank(tank, gRenderer);
+    }
+    for (Bullet* bullet : env.GetBullets()) {
+      drawBullet(bullet, gRenderer);
     }
 
     drawStrategicPoint(env.GetStrategicPoint(), gRenderer);

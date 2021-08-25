@@ -1,9 +1,10 @@
 #pragma once
 #include <tuple>
 #include <vector>
-#include "tank.h"
 #include "box2d/box2d.h"
 #include "action.h"
+#include "tank.h"
+#include "bullet.h"
 #include "strategic_point.h"
 #include "collision_processor.h"
 
@@ -29,10 +30,12 @@ class Env {
     std::vector<Tank*> GetTanks();
     StrategicPoint* GetStrategicPoint();
     float GetArenaSize();
+    std::vector<Bullet*> GetBullets();
   private:
     std::vector<Observation> CreateObservations();
     int tanksCount;
     std::vector<Tank*> tanks;
+    std::vector<Bullet*> bullets;
     b2World* world_;
     StrategicPoint* strategicPoint;
     CollisionProcessor* collisionProcessor;
