@@ -11,7 +11,7 @@
 const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 1200;
 
-const float SCALE = 5.0f;
+const float SCALE = 15.0f;
 const int OFFSET_X = SCREEN_WIDTH / 2;
 const int OFFSET_Y = SCREEN_HEIGHT / 2;
 

@@ -16,11 +16,11 @@ Bullet::Bullet(b2World* world, b2Vec2 firePosition, b2Vec2 fireDirection, GameOb
   body->SetUserData(this);
 
   b2CircleShape shape;
-  shape.m_radius = 0.1f;
+  shape.m_radius = 0.025f;
 
   b2FixtureDef fixtureDef;
   fixtureDef.shape = &shape;
-  fixtureDef.density = 1000.0f;
+  fixtureDef.density = 1.0f;
 
   body->CreateFixture(&fixtureDef);
   body->ApplyLinearImpulseToCenter(fireDirection, true);

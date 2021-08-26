@@ -10,7 +10,7 @@
 #include "strategic_point.h"
 #include "collision_processor.h"
 
-const float ARENA_SIZE = 100.0f;  // meters. w = h = 2 * ARENA_SIZE
+const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
 const double PI = 3.14159265;
 const double IS_AHEAD_THRESHOLD = PI / 4;
 const double EPSILON = 0.0001;
@@ -63,12 +63,12 @@ Env::Env() {
     ground->CreateFixture(&sd);
   }
 
-  int y_coords[] = {-40, -20, 0, 20, 40};
-  int x_coords[] = {-70, 70};
+  int y_coords[] = {-15, -10, 0, 10, 15};
+  int x_coords[] = {-15, 15};
   int i = 0;
   for (const int y : y_coords) {
     for (const int x : x_coords) {
-      float angle = (x > 0) ? 0 : -3.14;
+      float angle = (x > 0) ? -3.14 : 0;
       Tank* tank = new Tank(world_, b2Vec2(x, y), angle);
       b2FrictionJointDef jd;
       jd.bodyA = ground;
@@ -76,8 +76,8 @@ Env::Env() {
       jd.localAnchorA.SetZero();
       jd.localAnchorB = tank->GetBody()->GetLocalCenter();
       jd.collideConnected = true;
-      jd.maxForce = 6000.0f;
-      jd.maxTorque = 6000.0f;
+      jd.maxForce = 1500.0f;
+      jd.maxTorque = 700.0f;
 
       world_->CreateJoint(&jd);
       tanks.push_back(tank);
