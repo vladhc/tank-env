@@ -65,11 +65,11 @@ Env::Env() {
 
   int y_coords[] = {-15, -10, 0, 10, 15};
   int x_coords[] = {-15, 15};
-  int i = 0;
+  int idx = 0;
   for (const int y : y_coords) {
     for (const int x : x_coords) {
       float angle = (x > 0) ? -3.14 : 0;
-      Tank* tank = new Tank(world_, b2Vec2(x, y), angle);
+      Tank* tank = new Tank(idx, world_, b2Vec2(x, y), angle);
       b2FrictionJointDef jd;
       jd.bodyA = ground;
       jd.bodyB = tank->GetBody();
@@ -81,7 +81,7 @@ Env::Env() {
 
       world_->CreateJoint(&jd);
       tanks.push_back(tank);
-      i++;
+      idx++;
     }
   }
 

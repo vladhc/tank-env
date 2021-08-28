@@ -19,8 +19,9 @@ const int MAX_HITPOINTS = 100;
 const float WIDTH = 1.5f;
 const float HEIGHT = 0.75f;
 
-Tank::Tank(b2World* world, b2Vec2 position, float angle) :
+Tank::Tank(int id, b2World* world, b2Vec2 position, float angle) :
     GameObject(TANK),
+    id{id},
     hitpoints(MAX_HITPOINTS),
     fire_cooldown_(0)
 {
@@ -134,6 +135,10 @@ bool Tank::IsAlive() {
 
 int Tank::GetHitpoints() {
   return hitpoints;
+}
+
+int Tank::GetId() {
+  return id;
 }
 
 void printTank(Tank *tank) {

@@ -27,7 +27,9 @@ int writeBody(Tank* hero, b2Body* target, float* arr, unsigned int idx) {
 // const int OBSERVATION_SIZE = 82;
 #define OBSERVATION_SIZE 82
 
-void convertObservation(Observation obs, unsigned int idx, float* ret) {
+py::array_t<float> createObservation(const Observation &obs) {
+    float *ret = new float[OBSERVATION_SIZE];
+    unsigned int idx = 0;
     // Arena
     ret[idx++] = obs.arenaSize;
 
@@ -48,16 +50,8 @@ void convertObservation(Observation obs, unsigned int idx, float* ret) {
     b2Vec2 pos = obs.hero->GetBody()->GetLocalPoint(obs.strategicPoint->GetPosition());
     ret[idx++] = pos.Length();
     ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
-}
 
-py::dict convertObservation(std::vector<Observation> obs) {
-  py::dict obsMap;
-  for (unsigned int i=0; i < obs.size(); i++) {
-    float *obsArray = new float[OBSERVATION_SIZE];
-    convertObservation(obs[i], 0, obsArray);
-    obsMap[py::int_(i)] = py::array_t<float>(OBSERVATION_SIZE, obsArray);
-  }
-  return obsMap;
+    return py::array_t<float>(OBSERVATION_SIZE, ret);
 }
 
 PYBIND11_MODULE(tanks, m) {
@@ -66,7 +60,15 @@ PYBIND11_MODULE(tanks, m) {
         .def("reset",
             [](Env &env) {
               std::vector<Observation> obs = env.Reset();
-              return convertObservation(obs);
+
+              py::dict obsMap;
+              for (unsigned int i=0; i < obs.size(); i++) {
+                int tankId = obs[i].hero->GetId();
+                py::int_ idx = py::int_(tankId);
+                obsMap[idx] = createObservation(obs[i]);
+              }
+
+              return obsMap;
             }
         )
         .def("step",
@@ -93,17 +95,27 @@ PYBIND11_MODULE(tanks, m) {
               std::vector<float> rewards = std::get<1>(t);
               std::vector<char> dones = std::get<2>(t);
 
+              py::dict obsMap;
               py::dict rewardsMap;
               py::dict donesMap;
-              for (unsigned int i=0; i < rewards.size(); i++) {
-                py::int_ idx = py::int_(i);
-                rewardsMap[idx] = rewards[i];
-                donesMap[idx] = (bool)(dones[i]);
+
+              for (unsigned int i=0; i < obs.size(); i++) {
+                bool done = (bool)dones[i];
+                float reward = rewards[i];
+
+                if (!done || reward != 0) {
+                  int tankId = obs[i].hero->GetId();
+                  py::int_ idx = py::int_(tankId);
+
+                  obsMap[idx] = createObservation(obs[i]);
+                  rewardsMap[idx] = reward;
+                  donesMap[idx] = done;
+                }
               }
               donesMap["__all__"] = env.EpisodeComplete();
 
               return std::make_tuple(
-                  convertObservation(obs),
+                  obsMap,
                   rewardsMap,
                   donesMap,
                   py::dict()
