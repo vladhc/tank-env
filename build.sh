@@ -4,6 +4,7 @@ set -e  # exit when any command fails
 
 BUILD_TESTBED=false
 BUILD_PYMODULE=false
+BUILD_TESTS=false
 
 while test $# -gt 0
 do
@@ -11,6 +12,8 @@ do
     --testbed) BUILD_TESTBED=true
         ;;
     --module) BUILD_PYMODULE=true
+        ;;
+    --tests) BUILD_TESTS=true
         ;;
     --*) echo "bad option $1"
         ;;
@@ -41,6 +44,27 @@ then
     -lSDL2 \
     -lbox2d \
     -o $OUTPUT
+  echo "Done"
+fi
+
+if $BUILD_TESTS
+then
+  OUTPUT="build/tanks-test"
+  rm -f $OUTPUT
+  echo "Building and running tests"
+  c++ $SRC_COMMON \
+    tests/*_test.cc \
+    -g -rdynamic \
+    $INCLUDE_COMMON \
+    -Isrc \
+    -Iextern/googletest/googletest/include \
+    -std=c++11 -w \
+    -Llib \
+    -lbox2d \
+    -lgtest \
+    -pthread \
+    -o $OUTPUT
+  LD_LIBRARY_PATH="$(pwd)/lib:$LD_LIBRARY_PATH" $OUTPUT
   echo "Done"
 fi
 

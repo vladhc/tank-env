@@ -5,7 +5,7 @@
 
 class Tank : public GameObject {
   public:
-    Tank(int id, b2World* world, b2Vec2 position, float angle);
+    Tank(int id, int teamId, b2World* world, b2Vec2 position, float angle);
     ~Tank();
     float GetAngle();
     b2Vec2 GetPosition();
@@ -13,12 +13,14 @@ class Tank : public GameObject {
     b2Body* GetBody();
     void Drive(float anglePower, float power);
     Bullet* Fire();
-    void TakeDamage(Bullet* bullet);
+    void TakeDamage(int damage);
     bool IsAlive();
     int GetHitpoints();
     int GetId();
+    int GetTeamId();
   private:
     int id;
+    int teamId;
     int hitpoints;
     int fire_cooldown_;
     b2Body* body_;

@@ -1,67 +1,43 @@
+#include <iostream>
 #include <gtest/gtest.h>
 #include "tank.h"
 #include "env.h"
 
-const double PI = 3.14159265;
-const double ABS_ERROR = 0.0001;
-
-TEST(EnvTest, MoveTank) {
+TEST(EnvTest, EpisodeCompleteWhenSecondTeamIsDead) {
   // GIVEN
-  Tank tank(
-    Point{0.0, 0.0}, // position
-    0 // angle
-  );
-  Point pt = Point{5., 0};
-  tank.MoveTo(pt);
-  int ticks = 200;
-
-  // WHEN
-  for (int i=0; i < ticks; i++) {
-    moveTank(&tank);
+  Env env;
+  for (Tank* tank : env.GetTanks()) {
+    if (tank->GetTeamId() == 1) {
+      int hp = tank->GetHitpoints();
+      tank->TakeDamage(hp);
+    }
   }
 
+  // WHEN
+  bool done = env.EpisodeComplete();
+
   // THEN
-  EXPECT_NEAR(tank.GetPosition().x, pt.x, 0.1);
-  EXPECT_NEAR(tank.GetPosition().y, pt.y, 0.1);
-  EXPECT_FALSE(tank.GetMoveTarget().is_active);
+  EXPECT_TRUE(done);
 }
 
-TEST(EnvTest, RotateTankPI) {
+TEST(EnvTest, EpisodeNoCompleteWhenTeamsAlive) {
   // GIVEN
-  Tank tank(
-    Point{0.0, 0.0}, // position
-    0 // angle
-  );
-  tank.MoveTo(Point{-5., 0});
-  int ticks = 200;
-
-  // WHEN
-  for (int i=0; i < ticks; i++) {
-    rotateTank(&tank);
+  Env env;
+  // Kill 1 tank of each team
+  // int teamIds[] = {0, 1};
+  for (int teamId : {0, 1}) {
+    for (Tank* tank : env.GetTanks()) {
+      if (tank->GetTeamId() == teamId) {
+        int hp = tank->GetHitpoints();
+        tank->TakeDamage(hp);
+        break;
+      }
+    }
   }
 
-  // THEN
-  EXPECT_NEAR(tank.GetAngle(), PI, ABS_ERROR);
-}
-
-TEST(EnvTest, TankReachesMoveTarget) {
-  // GIVEN
-  Tank tank(
-    Point{0.0, 0.0}, // position
-    0 // angle
-  );
-  Point targetPos = Point{-3., 2.};
-  tank.MoveTo(targetPos);
-  int ticks = 200;
-
   // WHEN
-  for (int i=0; i < ticks; i++) {
-    moveTank(&tank);
-    rotateTank(&tank);
-  }
+  bool done = env.EpisodeComplete();
 
   // THEN
-  EXPECT_NEAR(tank.GetPosition().x, targetPos.x, 0.1);
-  EXPECT_NEAR(tank.GetPosition().y, targetPos.y, 0.1);
-  EXPECT_FALSE(tank.GetMoveTarget().is_active);
+  EXPECT_FALSE(done);
 }

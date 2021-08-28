@@ -19,9 +19,10 @@ const int MAX_HITPOINTS = 100;
 const float WIDTH = 1.5f;
 const float HEIGHT = 0.75f;
 
-Tank::Tank(int id, b2World* world, b2Vec2 position, float angle) :
+Tank::Tank(int id, int teamId, b2World* world, b2Vec2 position, float angle) :
     GameObject(TANK),
     id{id},
+    teamId{teamId},
     hitpoints(MAX_HITPOINTS),
     fire_cooldown_(0)
 {
@@ -125,8 +126,8 @@ Bullet* Tank::Fire() {
   );
 }
 
-void Tank::TakeDamage(Bullet* bullet) {
-  hitpoints = max(0, hitpoints - 30);
+void Tank::TakeDamage(int damage) {
+  hitpoints = max(0, hitpoints - damage);
 }
 
 bool Tank::IsAlive() {
@@ -139,6 +140,10 @@ int Tank::GetHitpoints() {
 
 int Tank::GetId() {
   return id;
+}
+
+int Tank::GetTeamId() {
+  return teamId;
 }
 
 void printTank(Tank *tank) {

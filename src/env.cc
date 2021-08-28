@@ -69,7 +69,7 @@ Env::Env() {
   for (const int y : y_coords) {
     for (const int x : x_coords) {
       float angle = (x > 0) ? -3.14 : 0;
-      Tank* tank = new Tank(idx, world_, b2Vec2(x, y), angle);
+      Tank* tank = new Tank(idx, x > 0, world_, b2Vec2(x, y), angle);
       b2FrictionJointDef jd;
       jd.bodyA = ground;
       jd.bodyB = tank->GetBody();
@@ -156,7 +156,7 @@ std::tuple<
   while (collisionProcessor->PollEvent(&c)) {
     if (c.bullet != NULL) {
       if (c.tank != NULL) {
-        c.tank->TakeDamage(c.bullet);
+        c.tank->TakeDamage(30);
       }
       deleteBullet(c.bullet);
     }
@@ -203,5 +203,12 @@ float Env::GetArenaSize() {
 }
 
 bool Env::EpisodeComplete() {
-  return false;
+  bool teamAlive[] = {false, false};
+  for (Tank* tank : tanks) {
+    if (!tank->IsAlive()) {
+      continue;
+    }
+    teamAlive[tank->GetTeamId()] = true;
+  }
+  return !teamAlive[0] || !teamAlive[1];
 }
