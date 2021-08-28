@@ -75,7 +75,7 @@ PYBIND11_MODULE(tanks, m) {
         )
         .def("step",
             [](Env &env, std::map<int, py::array_t<float>> actionsMap) {
-              Action actions[actionsMap.size()];
+              std::map<int, Action> actions;
               for (auto item : actionsMap) {
                 py::buffer_info actionArrInfo = item.second.request();
                 if (actionArrInfo.ndim != 1) {

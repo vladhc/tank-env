@@ -1,5 +1,6 @@
 #include <iostream>
 #include <tuple>
+#include <map>
 #include <math.h>
 #include <stdlib.h>
 #include "box2d/box2d.h"
@@ -81,6 +82,7 @@ Env::Env() {
 
       world_->CreateJoint(&jd);
       tanks.push_back(tank);
+      alivePrevStep.push_back(true);
       idx++;
     }
   }
@@ -105,6 +107,13 @@ Env::~Env() {
 std::vector<Observation> Env::CreateObservations() {
   std::vector<Observation> obs;
   for (Tank* hero : tanks) {
+    int id = hero->GetId();
+    bool alive = hero->IsAlive();
+    if (!alive && !alivePrevStep[id]) {
+      continue;
+    }
+    alivePrevStep[id] = alive;
+
     std::vector<Tank*> allies;
     for (Tank* tank : tanks) {
       if (tank != hero) {
@@ -140,11 +149,19 @@ std::tuple<
   std::vector<Observation>,
   std::vector<float>,
   std::vector<char>
-> Env::Step(Action actions[]) {
-  for (unsigned int i=0; i < tanks.size(); i++) {
-    tanks[i]->Drive(actions[i].anglePower, actions[i].power);
-    if (actions[i].fire) {
-      Bullet* bullet = tanks[i]->Fire();
+> Env::Step(std::map<int, Action> actions) {
+
+  // Apply actions
+  for (const auto &x : actions) {
+    int tankId = x.first;
+    Tank* tank = tanks[tankId];
+    if (!tank->IsAlive()) {
+      continue;
+    }
+    Action action = x.second;
+    tank->Drive(action.anglePower, action.power);
+    if (action.fire) {
+      Bullet* bullet = tank->Fire();
       if (bullet != NULL) {
         bullets.push_back(bullet);
       }
@@ -153,6 +170,7 @@ std::tuple<
   world_->Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
   TypedContact c;
 
+  // Process collisions
   while (collisionProcessor->PollEvent(&c)) {
     if (c.bullet != NULL) {
       if (c.tank != NULL) {
@@ -170,17 +188,18 @@ std::tuple<
   std::vector<float> rewards;
   std::vector<char> dones;
 
-  for (Tank* tank : tanks) {
+  for (const Observation &obs : obs) {
+    Tank* tank = obs.hero;
+    const bool alive = tank->IsAlive();
     float reward = 0.0f;
-    bool done = false;
     if (strategicPoint->GetOwner() == tank) {
       reward += 1.0f;
     }
-    if (tank->GetHitpoints() == 0) {
-      done = true;
+    if (!alive) {
+      reward -= 1.0f;
     }
     rewards.push_back(reward);
-    dones.push_back(done);
+    dones.push_back(!alive);
   }
 
   return std::make_tuple(obs, rewards, dones);

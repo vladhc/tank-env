@@ -1,6 +1,7 @@
 #pragma once
 #include <tuple>
 #include <vector>
+#include <map>
 #include "box2d/box2d.h"
 #include "action.h"
 #include "tank.h"
@@ -26,7 +27,7 @@ class Env {
       std::vector<Observation>,
       std::vector<float>,
       std::vector<char>
-    > Step(Action actions[]);
+    > Step(std::map<int, Action> actions);
     std::vector<Tank*> GetTanks();
     StrategicPoint* GetStrategicPoint();
     float GetArenaSize();
@@ -41,6 +42,7 @@ class Env {
     StrategicPoint* strategicPoint;
     CollisionProcessor* collisionProcessor;
     void deleteBullet(Bullet* bullet);
+    std::vector<char> alivePrevStep; // tankId -> wasAlivePreviousStep
 };
 
 void moveTank(Tank *tank);

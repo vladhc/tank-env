@@ -154,10 +154,7 @@ int main() {
   env.Reset();
   KeyboardController keyController;
 
-  Action actions[env.GetTanks().size()];
-  for (int i=0; i < env.GetTanks().size(); i++) {
-    actions[i] = Action{0.0f, 0.0f};
-  }
+  std::map<int, Action> actions;
   actions[0] = keyController.GetAction();
 
   while(true) {

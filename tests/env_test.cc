@@ -41,3 +41,80 @@ TEST(EnvTest, EpisodeNoCompleteWhenTeamsAlive) {
   // THEN
   EXPECT_FALSE(done);
 }
+
+TEST(EnvTest, DeadTankIsReturnedOnce) {
+  // GIVEN
+  Env env;
+  // Kill 1 tank
+  int tankId = 0;
+  for (Tank* tank : env.GetTanks()) {
+    if (tank->GetId() == tankId) {
+      int hp = tank->GetHitpoints();
+      tank->TakeDamage(hp);
+      break;
+    }
+  }
+  std::map<int, Action> actions;
+
+  // WHEN
+  auto step1 = env.Step(actions);
+  auto step2 = env.Step(actions);
+
+  // THEN
+  bool tankExported = false;
+  for (Observation obs : std::get<0>(step1)) {
+    if (obs.hero->GetId() == tankId) {
+      tankExported = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(tankExported);
+
+  tankExported = false;
+  for (Observation obs : std::get<0>(step2)) {
+    if (obs.hero->GetId() == tankId) {
+      tankExported = true;
+      break;
+    }
+  }
+  EXPECT_FALSE(tankExported);
+}
+
+TEST(EnvTest, DeadTankIsDoneAndPunished) {
+  // GIVEN
+  Env env;
+  // Kill 1 tank of each team
+  // int teamIds[] = {0, 1};
+  int tankId = 0;
+  for (Tank* tank : env.GetTanks()) {
+    if (tank->GetId() == tankId) {
+      int hp = tank->GetHitpoints();
+      tank->TakeDamage(hp);
+      break;
+    }
+  }
+  std::map<int, Action> actions;
+
+  // WHEN
+  auto step = env.Step(actions);
+
+  // THEN
+  auto observations = std::get<0>(step);
+  auto rewards = std::get<1>(step);
+  auto dones = std::get<2>(step);
+
+  float reward = 0;
+  bool done = false;
+
+  for (int i=0; i < observations.size(); i++) {
+    Observation obs = observations[i];
+    if (obs.hero->GetId() == tankId) {
+      reward = rewards[i];
+      done = dones[i];
+      break;
+    }
+  }
+
+  ASSERT_TRUE(reward < 0);
+  ASSERT_TRUE(done);
+}
