@@ -203,21 +203,29 @@ std::tuple<
 
   std::vector<Observation> obs = CreateObservations();
 
+  // Evaluate per-team reward
+  float teamRewards[] = {0.0f, 0.0f};
+  for (const Observation &obs : obs) {
+    Tank* tank = obs.hero;
+    const int teamId = tank->GetTeamId();
+    const bool alive = tank->IsAlive();
+    if (strategicPoint->GetOwner() == tank) {
+      teamRewards[teamId] += 0.1f;
+    }
+    if (!tank->IsAlive()) {
+      teamRewards[teamId] -= 1.0f;
+    }
+  }
+
+  // Compose rewards, dones
   std::vector<float> rewards;
   std::vector<char> dones;
 
   for (const Observation &obs : obs) {
     Tank* tank = obs.hero;
-    const bool alive = tank->IsAlive();
-    float reward = 0.0f;
-    if (strategicPoint->GetOwner() == tank) {
-      reward += 1.0f;
-    }
-    if (!alive) {
-      reward -= 1.0f;
-    }
+    float reward = teamRewards[tank->GetTeamId()];
     rewards.push_back(reward);
-    dones.push_back(!alive);
+    dones.push_back(!tank->IsAlive());
   }
 
   return std::make_tuple(obs, rewards, dones);
