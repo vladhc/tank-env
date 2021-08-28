@@ -1,10 +1,11 @@
 #include <iostream>
 #include <map>
-#include "env.h"
-#include "geom.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+#include "env.h"
+#include "geom.h"
+#include "renderer.h"
 
 namespace py = pybind11;
 
@@ -57,6 +58,12 @@ py::array_t<float> createObservation(const Observation &obs) {
 }
 
 PYBIND11_MODULE(tanks, m) {
+    py::class_<Renderer>(m, "Renderer")
+        .def(py::init<>())
+        .def("render",
+            [](Renderer &renderer, Env &env) {
+              renderer.Render(env);
+            });
     py::class_<Env>(m, "Env")
         .def(py::init<>())
         .def("reset",

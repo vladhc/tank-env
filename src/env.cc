@@ -133,7 +133,6 @@ std::vector<Observation> Env::Reset() {
   int yCoords[] = {-15, -10, 0, 10, 15};
   int teamIds[] = {0, 1};
 
-  int idx = 0;
   for (const int teamId : teamIds) {
     const int x = teamId == 0 ? 15 : -15;
     const float angle = (x > 0) ? M_PI : 0;
@@ -208,7 +207,6 @@ std::tuple<
   for (const Observation &obs : obs) {
     Tank* tank = obs.hero;
     const int teamId = tank->GetTeamId();
-    const bool alive = tank->IsAlive();
     if (strategicPoint->GetOwner() == tank) {
       teamRewards[teamId] += 0.1f;
     }

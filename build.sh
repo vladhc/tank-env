@@ -15,6 +15,11 @@ do
         ;;
     --tests) BUILD_TESTS=true
         ;;
+    --all)
+        BUILD_TESTBED=true
+        BUILD_PYMODULE=true
+        BUILD_TESTS=true
+        ;;
     --*) echo "bad option $1"
         ;;
     *) echo "argument $1"
@@ -36,7 +41,7 @@ then
   echo "Building Testbed"
   c++ $SRC_COMMON \
     src/keyboard_controller.cc \
-    src/render.cc \
+    src/renderer.cc src/testbed.cc \
     -g -rdynamic \
     $INCLUDE_COMMON \
     -std=c++11 -w \
@@ -76,6 +81,7 @@ then
   c++ \
     $SRC_COMMON \
     src/module.cc \
+    src/renderer.cc \
     -O3 -Wall -shared -std=c++11 \
     -fPIC \
     $(python-config --includes) \
@@ -83,6 +89,7 @@ then
     $INCLUDE_COMMON \
     -Llib \
     -lbox2d \
+    -lSDL2 \
     -o "$OUTPUT"
   echo "Done"
 fi
