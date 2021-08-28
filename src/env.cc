@@ -176,6 +176,9 @@ std::tuple<
     if (strategicPoint->GetOwner() == tank) {
       reward += 1.0f;
     }
+    if (tank->GetHitpoints() == 0) {
+      done = true;
+    }
     rewards.push_back(reward);
     dones.push_back(done);
   }
@@ -197,4 +200,8 @@ StrategicPoint* Env::GetStrategicPoint() {
 
 float Env::GetArenaSize() {
   return ARENA_SIZE;
+}
+
+bool Env::EpisodeComplete() {
+  return false;
 }

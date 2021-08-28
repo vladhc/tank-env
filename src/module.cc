@@ -100,6 +100,7 @@ PYBIND11_MODULE(tanks, m) {
                 rewardsMap[idx] = rewards[i];
                 donesMap[idx] = (bool)(dones[i]);
               }
+              donesMap["__all__"] = env.EpisodeComplete();
 
               return std::make_tuple(
                   convertObservation(obs),

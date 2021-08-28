@@ -31,6 +31,7 @@ class Env {
     StrategicPoint* GetStrategicPoint();
     float GetArenaSize();
     std::vector<Bullet*> GetBullets();
+    bool EpisodeComplete();
   private:
     std::vector<Observation> CreateObservations();
     int tanksCount;
