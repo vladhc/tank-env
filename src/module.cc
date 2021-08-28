@@ -8,7 +8,9 @@
 
 namespace py = pybind11;
 
-int writeBody(Tank* hero, b2Body* target, float* arr, unsigned int idx) {
+int writeTank(Tank* hero, Tank* tank, float* arr, unsigned int idx) {
+  b2Body* target = tank->GetBody();
+  arr[idx++] = tank->GetTeamId() == hero->GetTeamId();
   arr[idx++] = target->GetPosition().x;
   arr[idx++] = target->GetPosition().y;
   arr[idx++] = target->GetAngle();
@@ -23,9 +25,9 @@ int writeBody(Tank* hero, b2Body* target, float* arr, unsigned int idx) {
   return idx;
 }
 
-// 10 + 8 (per 1 tank) x9 tanks
-// const int OBSERVATION_SIZE = 82;
-#define OBSERVATION_SIZE 82
+// hero: 10 floats
+// 1 tank: 9 floats
+const int OBSERVATION_SIZE = 10 + 9 * 9;
 
 py::array_t<float> createObservation(const Observation &obs) {
     float *ret = new float[OBSERVATION_SIZE];
@@ -43,7 +45,7 @@ py::array_t<float> createObservation(const Observation &obs) {
     ret[idx++] = obs.hero->GetBody()->GetAngularVelocity();
 
     for (Tank* ally : obs.allies) {
-      idx = writeBody(obs.hero, ally->GetBody(), ret, idx);
+      idx = writeTank(obs.hero, ally, ret, idx);
     }
 
     // StrategicPoint
