@@ -5,7 +5,7 @@
 
 class Tank : public GameObject {
   public:
-    Tank(int id, int teamId, b2World* world, b2Vec2 position, float angle);
+    Tank(int id, int teamId, b2World* world);
     ~Tank();
     float GetAngle();
     b2Vec2 GetPosition();

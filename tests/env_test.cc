@@ -118,3 +118,19 @@ TEST(EnvTest, DeadTankIsDoneAndPunished) {
   ASSERT_TRUE(reward < 0);
   ASSERT_TRUE(done);
 }
+
+TEST(EnvTest, ResetRemovesBullets) {
+  // GIVEN
+  Env env;
+  std::map<int, Action> actions;
+  for (Tank* tank : env.GetTanks()) {
+    actions[tank->GetId()] = Action{0, 0, true};
+  }
+  env.Step(actions);
+
+  // WHEN
+  env.Reset();
+
+  // THEN
+  ASSERT_TRUE(env.GetBullets().empty());
+}

@@ -19,7 +19,7 @@ const int MAX_HITPOINTS = 100;
 const float WIDTH = 1.5f;
 const float HEIGHT = 0.75f;
 
-Tank::Tank(int id, int teamId, b2World* world, b2Vec2 position, float angle) :
+Tank::Tank(int id, int teamId, b2World* world) :
     GameObject(TANK),
     id{id},
     teamId{teamId},
@@ -28,8 +28,6 @@ Tank::Tank(int id, int teamId, b2World* world, b2Vec2 position, float angle) :
 {
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;
-  bodyDef.position = position;
-  bodyDef.angle = angle;
 
   body_ = world->CreateBody(&bodyDef);
   body_->SetUserData(this);

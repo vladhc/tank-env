@@ -18,6 +18,7 @@ const double EPSILON = 0.0001;
 
 const int VELOCITY_ITERATIONS = 24;
 const int POSITION_ITERATIONS = 8;
+const int TANKS_COUNT = 10;
 
 Env::Env() {
   b2Vec2 gravity(0.0f, 0.0f);
@@ -64,27 +65,20 @@ Env::Env() {
     ground->CreateFixture(&sd);
   }
 
-  int y_coords[] = {-15, -10, 0, 10, 15};
-  int x_coords[] = {-15, 15};
-  int idx = 0;
-  for (const int y : y_coords) {
-    for (const int x : x_coords) {
-      float angle = (x > 0) ? -3.14 : 0;
-      Tank* tank = new Tank(idx, x > 0, world_, b2Vec2(x, y), angle);
-      b2FrictionJointDef jd;
-      jd.bodyA = ground;
-      jd.bodyB = tank->GetBody();
-      jd.localAnchorA.SetZero();
-      jd.localAnchorB = tank->GetBody()->GetLocalCenter();
-      jd.collideConnected = true;
-      jd.maxForce = 1500.0f;
-      jd.maxTorque = 700.0f;
+  for (unsigned int idx=0; idx < TANKS_COUNT; idx++) {
+    Tank* tank = new Tank(idx, idx % 2 == 0, world_);
+    b2FrictionJointDef jd;
+    jd.bodyA = ground;
+    jd.bodyB = tank->GetBody();
+    jd.localAnchorA.SetZero();
+    jd.localAnchorB = tank->GetBody()->GetLocalCenter();
+    jd.collideConnected = true;
+    jd.maxForce = 1500.0f;
+    jd.maxTorque = 700.0f;
 
-      world_->CreateJoint(&jd);
-      tanks.push_back(tank);
-      alivePrevStep.push_back(true);
-      idx++;
-    }
+    world_->CreateJoint(&jd);
+    tanks.push_back(tank);
+    alivePrevStep.push_back(true);
   }
 
   strategicPoint = new StrategicPoint(world_, b2Vec2(0.0f, 0.0f));
@@ -131,6 +125,30 @@ std::vector<Observation> Env::CreateObservations() {
 }
 
 std::vector<Observation> Env::Reset() {
+  while (!bullets.empty()) {
+    deleteBullet(bullets[0]);
+  }
+
+  // Reset tanks position and angle
+  int yCoords[] = {-15, -10, 0, 10, 15};
+  int teamIds[] = {0, 1};
+
+  int idx = 0;
+  for (const int teamId : teamIds) {
+    const int x = teamId == 0 ? 15 : -15;
+    const float angle = (x > 0) ? M_PI : 0;
+
+    unsigned int yCoordIdx = 0;
+    for (Tank* tank : GetTanks()) {
+      if (tank->GetTeamId() != teamId) {
+        continue;
+      }
+      const int y = yCoords[yCoordIdx];
+      tank->GetBody()->SetTransform(b2Vec2(x, y), angle);
+      yCoordIdx++;
+    }
+  }
+
   return CreateObservations();
 }
 
