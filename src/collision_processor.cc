@@ -8,6 +8,7 @@
 
 CollisionProcessor::CollisionProcessor(b2World* world) {
   world->SetContactListener(this);
+  world->SetContactFilter(this);
   createIterator = true;
 }
 
@@ -29,10 +30,10 @@ bool CollisionProcessor::PollEvent(TypedContact* ptr) {
   return true;
 }
 
-TypedContact ToTypedContact(b2Contact* contact) {
+TypedContact ToTypedContact(b2Fixture *fixtureA, b2Fixture *fixtureB) {
   TypedContact c{NULL, NULL, NULL};
 
-  b2Fixture* fixtures[] = {contact->GetFixtureA(), contact->GetFixtureB()};
+  b2Fixture* fixtures[] = {fixtureA, fixtureB};
   for (b2Fixture* fixture : fixtures) {
     GameObject* gameObj = (GameObject*)fixture->GetBody()->GetUserData();
     if (gameObj == NULL) {
@@ -54,6 +55,10 @@ TypedContact ToTypedContact(b2Contact* contact) {
   return c;
 }
 
+TypedContact ToTypedContact(b2Contact* contact) {
+  return ToTypedContact(contact->GetFixtureA(), contact->GetFixtureB());
+}
+
 void CollisionProcessor::BeginContact(b2Contact* contact) {
   TypedContact c = ToTypedContact(contact);
   contacts.push_back(c);
@@ -65,4 +70,12 @@ void CollisionProcessor::EndContact(b2Contact* contact) {
     return;
   }
   c.point->SetOwner(NULL);
+}
+
+bool CollisionProcessor::ShouldCollide (b2Fixture *fixtureA, b2Fixture *fixtureB) {
+  TypedContact c = ToTypedContact(fixtureA, fixtureB);
+  if (c.bullet != NULL && c.tank != NULL && c.bullet->GetOwner() == c.tank) {
+    return false;
+  }
+  return true;
 }

@@ -8,6 +8,8 @@ class KeyboardController {
   private:
     bool left;
     bool right;
+    bool turretLeft;
+    bool turretRight;
     bool up;
     bool down;
     bool fire;

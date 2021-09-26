@@ -5,6 +5,8 @@
 KeyboardController::KeyboardController():
   left(false),
   right(false),
+  turretLeft(false),
+  turretRight(false),
   up(false),
   down(false),
   fire(false),
@@ -28,6 +30,12 @@ void KeyboardController::Update() {
         case SDLK_s:
           down = true;
           break;
+        case SDLK_q:
+          turretLeft = true;
+          break;
+        case SDLK_e:
+          turretRight = true;
+          break;
         case SDLK_d:
           right = true;
           break;
@@ -46,6 +54,12 @@ void KeyboardController::Update() {
         case SDLK_s:
           down = false;
           break;
+        case SDLK_q:
+          turretLeft = false;
+          break;
+        case SDLK_e:
+          turretRight = false;
+          break;
         case SDLK_d:
           right = false;
           break;
@@ -56,7 +70,8 @@ void KeyboardController::Update() {
           fire = false;
           break;
       }
-    } if (event.type == SDL_QUIT) {
+    }
+    if (event.type == SDL_QUIT) {
       exit = true;
     }
   }
@@ -64,12 +79,18 @@ void KeyboardController::Update() {
 
 Action KeyboardController::GetAction() {
   Update();
-  Action action{0.0f, 0.0f, fire};
+  Action action{0.0f, 0.0f, 0.0f, fire};
   if (left) {
     action.anglePower = -1.0f;
   }
   if (right) {
     action.anglePower = 1.0f;
+  }
+  if (turretLeft) {
+    action.turretAnglePower = -1.0f;
+  }
+  if (turretRight) {
+    action.turretAnglePower = 1.0f;
   }
   if (up) {
     action.power = 1.0f;

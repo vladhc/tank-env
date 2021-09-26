@@ -18,6 +18,7 @@ const int MAX_FIRE_COOLDOWN = 30;
 const int MAX_HITPOINTS = 100;
 const float WIDTH = 1.5f;
 const float HEIGHT = 0.75f;
+const float PI = 3.14159265f;
 
 Tank::Tank(int id, int teamId, b2World* world) :
     GameObject(TANK),
@@ -26,6 +27,7 @@ Tank::Tank(int id, int teamId, b2World* world) :
     hitpoints(MAX_HITPOINTS),
     fire_cooldown_(0)
 {
+  // Body
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;
 
@@ -34,8 +36,31 @@ Tank::Tank(int id, int teamId, b2World* world) :
 
   b2PolygonShape tankShape;
   tankShape.SetAsBox(WIDTH, HEIGHT);
-
   body_->CreateFixture(&tankShape, 1.0f);
+
+  // Turret
+  b2BodyDef turretDef;
+  turretDef.type = b2_dynamicBody;
+
+  turret = world->CreateBody(&turretDef);
+  turret->SetUserData(this);
+
+  b2PolygonShape turretShape;
+  turretShape.SetAsBox(WIDTH * 0.6, HEIGHT * 0.6);
+  turret->CreateFixture(&turretShape, 1.0f);
+
+  // Joint
+  b2RevoluteJointDef jointDef;
+  jointDef.bodyA = body_;
+  jointDef.bodyB = turret;
+  jointDef.collideConnected = false;
+  jointDef.enableMotor = true;
+  jointDef.maxMotorTorque = ANGLE_TORQUE;
+  jointDef.enableLimit = true;
+  jointDef.lowerAngle = -PI / 2.0f;
+  jointDef.upperAngle = PI / 2.0f;
+  // TODO: rotation limits
+  joint = (b2RevoluteJoint*) world->CreateJoint(&jointDef);
 }
 
 Tank::~Tank() {
@@ -58,6 +83,10 @@ b2Body* Tank::GetBody() {
   return body_;
 }
 
+b2Body* Tank::GetTurret() {
+  return turret;
+}
+
 float min(float a, float b) {
   if (a < b) {
     return a;
@@ -72,7 +101,7 @@ float max(float a, float b) {
   return b;
 }
 
-void Tank::Drive(float anglePower, float power) {
+void Tank::Drive(float anglePower, float turretAnglePower, float power) {
   if (!IsAlive()) {
     return;
   }
@@ -85,6 +114,16 @@ void Tank::Drive(float anglePower, float power) {
 
     float torque = anglePower * ANGLE_TORQUE;
     body_->ApplyAngularImpulse(torque, true);
+  }
+
+  // Turn turret
+  float turretVelocity = turret->GetAngularVelocity();
+  if (turretAnglePower == 0.0f) {
+    joint->SetMotorSpeed(0.0f);
+  } else if (abs(turretVelocity) < MAX_ANGULARY_VELOCITY) {
+    turretAnglePower = min(turretAnglePower, 1.0f);
+    turretAnglePower = max(turretAnglePower, -1.0f);
+    joint->SetMotorSpeed(turretAnglePower);
   }
 
   // accelerate if needed
@@ -114,12 +153,12 @@ Bullet* Tank::Fire() {
     return NULL;
   }
   fire_cooldown_ += MAX_FIRE_COOLDOWN;
-  b2Vec2 pos = body_->GetWorldVector(b2Vec2(WIDTH + 0.04f, 0));
-  pos += body_->GetPosition();
+  b2Vec2 pos = turret->GetWorldVector(b2Vec2(WIDTH, 0));
+  pos += turret->GetPosition();
   return new Bullet(
-      body_->GetWorld(),
+      turret->GetWorld(),
       pos,
-      body_->GetWorldVector(b2Vec2(1.0f, 0)),
+      turret->GetWorldVector(b2Vec2(1.0f, 0)),
       this
   );
 }

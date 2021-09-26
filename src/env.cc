@@ -176,7 +176,7 @@ std::tuple<
       continue;
     }
     Action action = x.second;
-    tank->Drive(action.anglePower, action.power);
+    tank->Drive(action.anglePower, action.turretAnglePower, action.power);
     if (action.fire) {
       Bullet* bullet = tank->Fire();
       if (bullet != NULL) {
@@ -204,8 +204,8 @@ std::tuple<
 
   // Evaluate per-team reward
   float teamRewards[] = {0.0f, 0.0f};
-  for (const Observation &obs : obs) {
-    Tank* tank = obs.hero;
+  for (const Observation &ob : obs) {
+    Tank* tank = ob.hero;
     const int teamId = tank->GetTeamId();
     if (strategicPoint->GetOwner() == tank) {
       teamRewards[teamId] += 0.1f;
@@ -219,8 +219,8 @@ std::tuple<
   std::vector<float> rewards;
   std::vector<char> dones;
 
-  for (const Observation &obs : obs) {
-    Tank* tank = obs.hero;
+  for (const Observation &ob : obs) {
+    Tank* tank = ob.hero;
     float reward = teamRewards[tank->GetTeamId()];
     rewards.push_back(reward);
     dones.push_back(!tank->IsAlive());

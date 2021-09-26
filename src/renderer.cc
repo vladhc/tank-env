@@ -139,6 +139,8 @@ void Renderer::DrawTank(Tank* tank) {
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
 
   // Light lines (turret top)
+  b2Vec2 turretPos = tank->GetTurret()->GetPosition();
+  float turretAngle = tank->GetTurret()->GetAngle();
   SDL_Point turretPoints[TANK_TURRET_POINTS_COUNT];
   for (int i=0; i < TANK_TURRET_POINTS_COUNT; i++) {
     Point pt = Point{
@@ -146,8 +148,8 @@ void Renderer::DrawTank(Tank* tank) {
       TANK_TURRET_POINTS[i].y * size
     };
     turretPoints[i] = SDL_Point{
-      int((pos.x + pt.x * cos(angle) - pt.y * sin(angle)) * SCALE + OFFSET_X),
-      int((pos.y + pt.y * cos(angle) + pt.x * sin(angle)) * SCALE + OFFSET_Y)
+      int((turretPos.x + pt.x * cos(turretAngle) - pt.y * sin(turretAngle)) * SCALE + OFFSET_X),
+      int((turretPos.y + pt.y * cos(turretAngle) + pt.x * sin(turretAngle)) * SCALE + OFFSET_Y)
     };
     turretPoints[i].y = turretPoints[i].y - int(TANK_LAYER_OFFSET * SCALE);
   }
