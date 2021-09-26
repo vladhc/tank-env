@@ -9,12 +9,16 @@
 
 namespace py = pybind11;
 
-int writeTank(Tank* hero, Tank* tank, float* arr, unsigned int idx) {
-  b2Body* target = tank->GetBody();
+int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
   arr[idx++] = tank->GetTeamId() == hero->GetTeamId();
+
+  b2Body* target = tank->GetBody();
+  b2Body* turret = tank->GetTurret();
+
   arr[idx++] = target->GetPosition().x;
   arr[idx++] = target->GetPosition().y;
   arr[idx++] = target->GetAngle();
+  arr[idx++] = turret->GetAngle();
   arr[idx++] = target->GetLinearVelocity().x;
   arr[idx++] = target->GetLinearVelocity().y;
   arr[idx++] = target->GetLinearVelocity().Length();
@@ -26,9 +30,9 @@ int writeTank(Tank* hero, Tank* tank, float* arr, unsigned int idx) {
   return idx;
 }
 
-// hero: 10 floats
-// 1 tank: 9 floats
-const int OBSERVATION_SIZE = 10 + 9 * 9;
+// hero: 11 floats
+// 1 tank: 10 floats
+const int OBSERVATION_SIZE = 11 + 9 * 10;
 
 py::array_t<float> createObservation(const Observation &obs) {
     float *ret = new float[OBSERVATION_SIZE];
@@ -46,7 +50,7 @@ py::array_t<float> createObservation(const Observation &obs) {
     ret[idx++] = obs.hero->GetBody()->GetAngularVelocity();
 
     for (Tank* ally : obs.allies) {
-      idx = writeTank(obs.hero, ally, ret, idx);
+      idx = write(ally, obs.hero, ret, idx);
     }
 
     // StrategicPoint
@@ -88,11 +92,11 @@ PYBIND11_MODULE(tanks, m) {
                 if (actionArrInfo.ndim != 1) {
                   throw std::runtime_error("Number of dimensions must be 1");
                 }
-                if (actionArrInfo.shape[0] != 3) {
-                  throw std::runtime_error("Expected dimension[0] to be of size 3");
+                if (actionArrInfo.shape[0] != 4) {
+                  throw std::runtime_error("Expected dimension[0] to be of size 4");
                 }
                 float* action = (float*)(actionArrInfo.ptr);
-                actions[item.first] = Action{action[0], action[1], action[2] > 0.5};
+                actions[item.first] = Action{action[0], action[1], action[2], action[3] > 0.5};
               }
 
               std::tuple<
