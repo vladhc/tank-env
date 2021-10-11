@@ -18,7 +18,6 @@ const int MAX_FIRE_COOLDOWN = 30;
 const int MAX_HITPOINTS = 100;
 const float WIDTH = 1.5f;
 const float HEIGHT = 0.75f;
-const float PI = 3.14159265f;
 
 Tank::Tank(int id, int teamId, b2World* world) :
     GameObject(TANK),
@@ -56,10 +55,7 @@ Tank::Tank(int id, int teamId, b2World* world) :
   jointDef.collideConnected = false;
   jointDef.enableMotor = true;
   jointDef.maxMotorTorque = ANGLE_TORQUE;
-  jointDef.enableLimit = true;
-  jointDef.lowerAngle = -PI / 2.0f;
-  jointDef.upperAngle = PI / 2.0f;
-  // TODO: rotation limits
+  jointDef.enableLimit = false;
   joint = (b2RevoluteJoint*) world->CreateJoint(&jointDef);
 }
 
@@ -120,7 +116,7 @@ void Tank::Drive(float anglePower, float turretAnglePower, float power) {
   float turretVelocity = turret->GetAngularVelocity();
   if (turretAnglePower == 0.0f) {
     joint->SetMotorSpeed(0.0f);
-  } else if (abs(turretVelocity) < MAX_ANGULARY_VELOCITY) {
+  } else if (std::abs(turretVelocity) < MAX_ANGULARY_VELOCITY) {
     turretAnglePower = min(turretAnglePower, 1.0f);
     turretAnglePower = max(turretAnglePower, -1.0f);
     joint->SetMotorSpeed(turretAnglePower);

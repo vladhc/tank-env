@@ -80,16 +80,16 @@ then
   echo "Building python shared library"
   c++ \
     $SRC_COMMON \
-    src/module.cc \
     src/renderer.cc \
+    src/module.cc \
     -O3 -Wall -shared -std=c++11 \
     -fPIC \
     $(python-config --includes) \
     -Iextern/pybind11/include \
     $INCLUDE_COMMON \
     -Llib \
-    -lbox2d \
     -lSDL2 \
+    -lbox2d \
     -o "$OUTPUT"
   echo "Done"
 fi

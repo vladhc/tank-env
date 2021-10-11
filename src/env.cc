@@ -1,7 +1,6 @@
 #include <iostream>
 #include <tuple>
 #include <map>
-#include <math.h>
 #include <stdlib.h>
 #include "box2d/box2d.h"
 #include "tank.h"
@@ -12,9 +11,6 @@
 #include "collision_processor.h"
 
 const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
-const double PI = 3.14159265;
-const double IS_AHEAD_THRESHOLD = PI / 4;
-const double EPSILON = 0.0001;
 
 const int VELOCITY_ITERATIONS = 24;
 const int POSITION_ITERATIONS = 8;
@@ -130,7 +126,7 @@ std::vector<Observation> Env::Reset() {
   }
 
   // Reset tanks position and angle
-  int yCoords[] = {-15, -10, 0, 10, 15};
+  float yCoords[] = {-15, -7.5, 0, 7.5, 15};
   int teamIds[] = {0, 1};
 
   for (const int teamId : teamIds) {
@@ -143,10 +139,14 @@ std::vector<Observation> Env::Reset() {
         continue;
       }
       const int y = yCoords[yCoordIdx];
-      tank->GetBody()->SetTransform(b2Vec2(x, y), angle);
+      const auto pos = b2Vec2(x, y);
+      tank->GetBody()->SetTransform(pos, angle);
+      tank->GetTurret()->SetTransform(pos, angle);
       yCoordIdx++;
     }
   }
+
+  strategicPoint->SetOwner(NULL);
 
   return CreateObservations();
 }
