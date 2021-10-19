@@ -159,6 +159,10 @@ Bullet* Tank::Fire() {
   );
 }
 
+int Tank::GetFireCooldown() {
+  return fire_cooldown_;
+}
+
 void Tank::TakeDamage(const int damage) {
   hitpoints = max(0, hitpoints - damage);
 }

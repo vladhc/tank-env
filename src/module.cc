@@ -13,6 +13,7 @@ namespace py = pybind11;
 int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
   arr[idx++] = tank->GetTeamId() == hero->GetTeamId();
   arr[idx++] = tank->GetHitpoints();
+  arr[idx++] = tank->GetFireCooldown();
 
   b2Body* body = tank->GetBody();
   b2Body* turret = tank->GetTurret();
@@ -36,7 +37,7 @@ int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
 
 // hero: 10 floats
 // 1 tank: 10 floats
-const int OBSERVATION_SIZE = 13 + 9 * 13;
+const int OBSERVATION_SIZE = 14 + 9 * 14;
 
 py::array_t<float> createObservation(const Observation &obs) {
     float *ret = new float[OBSERVATION_SIZE];
@@ -46,6 +47,8 @@ py::array_t<float> createObservation(const Observation &obs) {
 
     // Tank
     ret[idx++] = obs.hero->GetHitpoints();
+    ret[idx++] = obs.hero->GetFireCooldown();
+
     const b2Body* body = obs.hero->GetBody();
     const b2Body* turret = obs.hero->GetTurret();
     ret[idx++] = body->GetPosition().x;

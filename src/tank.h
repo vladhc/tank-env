@@ -14,6 +14,7 @@ class Tank : public GameObject {
     b2Body* GetTurret();
     void Drive(float anglePower, float turretAnglePower, float power);
     Bullet* Fire();
+    int GetFireCooldown();
     void TakeDamage(int damage);
     bool IsAlive();
     int GetHitpoints();
