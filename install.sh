@@ -3,6 +3,9 @@
 set -e  # exit when any command fails
 set -x  # show evaluation trace
 
+git submodule update
+sudo apt install cmake
+
 ORIGIN_DIR=$(pwd)
 LIB_DIR="$ORIGIN_DIR/lib"
 
