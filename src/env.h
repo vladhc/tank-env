@@ -16,6 +16,7 @@ struct Observation {
   std::vector<Tank*> allies;
   float arenaSize;
   StrategicPoint* strategicPoint;
+  std::vector<Bullet*> bullets;
 };
 
 class Env {

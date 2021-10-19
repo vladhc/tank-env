@@ -104,17 +104,18 @@ std::vector<Observation> Env::CreateObservations() {
     }
     alivePrevStep[id] = alive;
 
-    std::vector<Tank*> allies;
+    std::vector<Tank*> exceptHero;
     for (Tank* tank : tanks) {
       if (tank != hero) {
-        allies.push_back(tank);
+        exceptHero.push_back(tank);
       }
     }
     obs.push_back(Observation {
       hero,
-      allies,
+      exceptHero,
       ARENA_SIZE,
       strategicPoint,
+      bullets,
     });
   }
   return obs;

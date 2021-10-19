@@ -8,7 +8,31 @@
 #include "geom.h"
 #include "renderer.h"
 
+const int MAX_BULLETS_COUNT = 15; // 1 bullet per tank
+
+// hero: 10 floats
+// 1 tank: 10 floats
+const int OBSERVATION_SIZE = 14 + 9 * 14 + MAX_BULLETS_COUNT * 3;
+
 namespace py = pybind11;
+
+int writeBullets(std::vector<Bullet*> bullets, float* arr, unsigned int idx) {
+  int bulletsCount = 0;
+  for (Bullet* bullet : bullets) {
+    b2Body* body = bullet->GetBody();
+    arr[idx++] = body->GetPosition().x;
+    arr[idx++] = body->GetPosition().y;
+    arr[idx++] = normalizeAngle(body->GetAngle());
+    bulletsCount++;
+  }
+  while (bulletsCount < MAX_BULLETS_COUNT) {
+    arr[idx++] = 0.;
+    arr[idx++] = 0.;
+    arr[idx++] = 0.;
+    bulletsCount++;
+  }
+  return idx;
+}
 
 int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
   arr[idx++] = tank->GetTeamId() == hero->GetTeamId();
@@ -34,10 +58,6 @@ int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
   arr[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
   return idx;
 }
-
-// hero: 10 floats
-// 1 tank: 10 floats
-const int OBSERVATION_SIZE = 14 + 9 * 14;
 
 py::array_t<float> createObservation(const Observation &obs) {
     float *ret = new float[OBSERVATION_SIZE];
@@ -69,6 +89,8 @@ py::array_t<float> createObservation(const Observation &obs) {
     b2Vec2 pos = body->GetLocalPoint(obs.strategicPoint->GetPosition());
     ret[idx++] = pos.Length();
     ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
+
+    idx = writeBullets(obs.bullets, ret, idx);
 
     return py::array_t<float>(OBSERVATION_SIZE, ret);
 }
