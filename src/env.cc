@@ -97,8 +97,8 @@ Env::~Env() {
 std::vector<Observation> Env::CreateObservations() {
   std::vector<Observation> obs;
   for (Tank* hero : tanks) {
-    int id = hero->GetId();
-    bool alive = hero->IsAlive();
+    const int id = hero->GetId();
+    const bool alive = hero->IsAlive();
     if (!alive && !alivePrevStep[id]) {
       continue;
     }
@@ -143,6 +143,10 @@ std::vector<Observation> Env::Reset() {
       tank->GetBody()->SetTransform(pos, angle);
       tank->GetTurret()->SetTransform(pos, angle);
       yCoordIdx++;
+
+      const int id = tank->GetId();
+      alivePrevStep[id] = true;
+      tank->ResetHitpoints();
     }
   }
 

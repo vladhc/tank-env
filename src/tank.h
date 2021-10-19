@@ -17,6 +17,7 @@ class Tank : public GameObject {
     void TakeDamage(int damage);
     bool IsAlive();
     int GetHitpoints();
+    void ResetHitpoints();
     int GetId();
     int GetTeamId();
   private:

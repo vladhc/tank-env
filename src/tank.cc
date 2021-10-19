@@ -23,7 +23,7 @@ Tank::Tank(int id, int teamId, b2World* world) :
     GameObject(TANK),
     id{id},
     teamId{teamId},
-    hitpoints(MAX_HITPOINTS),
+    hitpoints{MAX_HITPOINTS},
     fire_cooldown_(0)
 {
   // Body
@@ -159,7 +159,7 @@ Bullet* Tank::Fire() {
   );
 }
 
-void Tank::TakeDamage(int damage) {
+void Tank::TakeDamage(const int damage) {
   hitpoints = max(0, hitpoints - damage);
 }
 
@@ -169,6 +169,10 @@ bool Tank::IsAlive() {
 
 int Tank::GetHitpoints() {
   return hitpoints;
+}
+
+void Tank::ResetHitpoints() {
+  hitpoints = MAX_HITPOINTS;
 }
 
 int Tank::GetId() {
