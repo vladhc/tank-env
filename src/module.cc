@@ -12,20 +12,23 @@ namespace py = pybind11;
 
 int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
   arr[idx++] = tank->GetTeamId() == hero->GetTeamId();
+  arr[idx++] = tank->GetHitpoints();
 
-  b2Body* target = tank->GetBody();
+  b2Body* body = tank->GetBody();
   b2Body* turret = tank->GetTurret();
 
-  arr[idx++] = target->GetPosition().x;
-  arr[idx++] = target->GetPosition().y;
-  arr[idx++] = normalizeAngle(target->GetAngle());
+  arr[idx++] = body->GetPosition().x;
+  arr[idx++] = body->GetPosition().y;
+  arr[idx++] = normalizeAngle(body->GetAngle());
   arr[idx++] = normalizeAngle(turret->GetAngle());
-  arr[idx++] = target->GetLinearVelocity().x;
-  arr[idx++] = target->GetLinearVelocity().y;
-  arr[idx++] = target->GetLinearVelocity().Length();
+  arr[idx++] = body->GetLinearVelocity().x;
+  arr[idx++] = body->GetLinearVelocity().y;
+  arr[idx++] = body->GetLinearVelocity().Length();
+  arr[idx++] = body->GetAngularVelocity();
+  arr[idx++] = turret->GetAngularVelocity();
 
   // In hero coordinates
-  b2Vec2 pos = hero->GetBody()->GetLocalPoint(target->GetPosition());
+  b2Vec2 pos = hero->GetBody()->GetLocalPoint(body->GetPosition());
   arr[idx++] = pos.Length();
   arr[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
   return idx;
@@ -33,7 +36,7 @@ int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
 
 // hero: 10 floats
 // 1 tank: 10 floats
-const int OBSERVATION_SIZE = 10 + 9 * 10;
+const int OBSERVATION_SIZE = 13 + 9 * 13;
 
 py::array_t<float> createObservation(const Observation &obs) {
     float *ret = new float[OBSERVATION_SIZE];
@@ -42,20 +45,25 @@ py::array_t<float> createObservation(const Observation &obs) {
     ret[idx++] = obs.arenaSize;
 
     // Tank
-    ret[idx++] = obs.hero->GetPosition().x;
-    ret[idx++] = obs.hero->GetPosition().y;
-    ret[idx++] = normalizeAngle(obs.hero->GetAngle());
-    ret[idx++] = obs.hero->GetBody()->GetLinearVelocity().x;
-    ret[idx++] = obs.hero->GetBody()->GetLinearVelocity().y;
-    ret[idx++] = obs.hero->GetBody()->GetLinearVelocity().Length();
-    ret[idx++] = obs.hero->GetBody()->GetAngularVelocity();
+    ret[idx++] = obs.hero->GetHitpoints();
+    const b2Body* body = obs.hero->GetBody();
+    const b2Body* turret = obs.hero->GetTurret();
+    ret[idx++] = body->GetPosition().x;
+    ret[idx++] = body->GetPosition().y;
+    ret[idx++] = normalizeAngle(body->GetAngle());
+    ret[idx++] = normalizeAngle(turret->GetAngle());
+    ret[idx++] = body->GetLinearVelocity().x;
+    ret[idx++] = body->GetLinearVelocity().y;
+    ret[idx++] = body->GetLinearVelocity().Length();
+    ret[idx++] = body->GetAngularVelocity();
+    ret[idx++] = turret->GetAngularVelocity();
 
     for (Tank* ally : obs.allies) {
       idx = write(ally, obs.hero, ret, idx);
     }
 
     // StrategicPoint
-    b2Vec2 pos = obs.hero->GetBody()->GetLocalPoint(obs.strategicPoint->GetPosition());
+    b2Vec2 pos = body->GetLocalPoint(obs.strategicPoint->GetPosition());
     ret[idx++] = pos.Length();
     ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 
