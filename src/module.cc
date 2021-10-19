@@ -16,12 +16,20 @@ const int OBSERVATION_SIZE = 14 + 9 * 14 + MAX_BULLETS_COUNT * 3;
 
 namespace py = pybind11;
 
-int writeBullets(std::vector<Bullet*> bullets, float* arr, unsigned int idx) {
+int writeBullets(std::vector<Bullet*> bullets, float* arr, float arena_size, unsigned int idx) {
   int bulletsCount = 0;
   for (Bullet* bullet : bullets) {
     b2Body* body = bullet->GetBody();
-    arr[idx++] = body->GetPosition().x;
-    arr[idx++] = body->GetPosition().y;
+    const auto x = body->GetPosition().x;
+    if (x < -arena_size || x > arena_size) {
+      continue;
+    }
+    const auto y = body->GetPosition().y;
+    if (y < -arena_size || y > arena_size) {
+      continue;
+    }
+    arr[idx++] = x;
+    arr[idx++] = y;
     arr[idx++] = normalizeAngle(body->GetAngle());
     bulletsCount++;
   }
@@ -90,7 +98,7 @@ py::array_t<float> createObservation(const Observation &obs) {
     ret[idx++] = pos.Length();
     ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 
-    idx = writeBullets(obs.bullets, ret, idx);
+    idx = writeBullets(obs.bullets, ret, obs.arenaSize, idx);
 
     return py::array_t<float>(OBSERVATION_SIZE, ret);
 }
