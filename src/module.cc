@@ -18,8 +18,8 @@ int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
 
   arr[idx++] = target->GetPosition().x;
   arr[idx++] = target->GetPosition().y;
-  arr[idx++] = target->GetAngle();
-  arr[idx++] = turret->GetAngle();
+  arr[idx++] = normalizeAngle(target->GetAngle());
+  arr[idx++] = normalizeAngle(turret->GetAngle());
   arr[idx++] = target->GetLinearVelocity().x;
   arr[idx++] = target->GetLinearVelocity().y;
   arr[idx++] = target->GetLinearVelocity().Length();
@@ -31,9 +31,9 @@ int write(Tank* tank, Tank* hero, float* arr, unsigned int idx) {
   return idx;
 }
 
-// hero: 11 floats
+// hero: 10 floats
 // 1 tank: 10 floats
-const int OBSERVATION_SIZE = 11 + 9 * 10;
+const int OBSERVATION_SIZE = 10 + 9 * 10;
 
 py::array_t<float> createObservation(const Observation &obs) {
     float *ret = new float[OBSERVATION_SIZE];
