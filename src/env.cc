@@ -184,10 +184,17 @@ std::tuple<
   TypedContact c;
 
   // Process collisions
+  std::map<int, float> perTankReward;
+  for (int idx=0; idx < TANKS_COUNT; idx++) {
+    perTankReward[idx] = 0.0f;
+  }
   while (collisionProcessor->PollEvent(&c)) {
     if (c.bullet != NULL) {
-      if (c.tank != NULL) {
+      if (c.tank != NULL && c.tank->IsAlive()) {
         DamageTank(c.tank->GetId(), 30);
+        const Tank* owner = (Tank*)c.bullet->GetOwner();
+        const int ownerId = owner->GetId();
+        perTankReward[ownerId] += 0.3f;
       }
       deleteBullet(c.bullet);
     }
@@ -216,8 +223,10 @@ std::tuple<
   std::vector<char> dones;
 
   for (const Observation &ob : obs) {
-    const Tank* tank = ob.tanks[ob.heroId];
-    float reward = teamRewards[tank->GetTeamId()];
+    const int tankId = ob.heroId;
+    const Tank* tank = ob.tanks[tankId];
+    float reward = perTankReward[tankId];
+    reward += teamRewards[tank->GetTeamId()];
     rewards.push_back(reward);
     dones.push_back(!tank->IsAlive());
   }
