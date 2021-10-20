@@ -123,7 +123,7 @@ std::vector<Observation> Env::Reset() {
 
   for (const int teamId : teamIds) {
     const int x = teamId == 0 ? 15 : -15;
-    const float angle = (x > 0) ? M_PI : 0;
+    const float angle = M_PI / 2;
 
     unsigned int yCoordIdx = 0;
     for (Tank* tank : tanks) {
@@ -194,7 +194,12 @@ std::tuple<
         DamageTank(c.tank->GetId(), 30);
         const Tank* owner = (Tank*)c.bullet->GetOwner();
         const int ownerId = owner->GetId();
-        perTankReward[ownerId] += 0.3f;
+        if (owner->GetTeamId() == c.tank->GetTeamId()) {
+          // friendly fire
+          perTankReward[ownerId] -= 0.3f;
+        } else {
+          perTankReward[ownerId] += 0.3f;
+        }
       }
       deleteBullet(c.bullet);
     }
