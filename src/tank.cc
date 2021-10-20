@@ -14,8 +14,8 @@ const double ACCELERATION = 130.0f;
 
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
-const int MAX_FIRE_COOLDOWN = 30;
-const int MAX_HITPOINTS = 100;
+const unsigned int MAX_FIRE_COOLDOWN = 30;
+const unsigned int MAX_HITPOINTS = 100;
 const float WIDTH = 1.5f;
 const float HEIGHT = 0.75f;
 
@@ -24,7 +24,7 @@ Tank::Tank(int id, int teamId, b2World* world) :
     id{id},
     teamId{teamId},
     hitpoints{MAX_HITPOINTS},
-    fire_cooldown_(0)
+    fire_cooldown_{0}
 {
   // Body
   b2BodyDef bodyDef;
@@ -179,11 +179,11 @@ Bullet* Tank::Fire() {
   );
 }
 
-int Tank::GetFireCooldown() const {
+unsigned int Tank::GetFireCooldown() const {
   return fire_cooldown_;
 }
 
-void Tank::TakeDamage(const int damage) {
+void Tank::TakeDamage(unsigned int damage) {
   hitpoints = max(0, hitpoints - damage);
 }
 
@@ -191,7 +191,7 @@ bool Tank::IsAlive() const {
   return hitpoints > 0;
 }
 
-int Tank::GetHitpoints() const {
+unsigned int Tank::GetHitpoints() const {
   return hitpoints;
 }
 

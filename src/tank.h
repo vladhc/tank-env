@@ -19,18 +19,18 @@ class Tank : public GameObject {
     float GetTurretAngularVelocity() const;
     void Drive(float anglePower, float turretAnglePower, float power);
     Bullet* Fire();
-    int GetFireCooldown() const;
-    void TakeDamage(int damage);
+    unsigned int GetFireCooldown() const;
+    void TakeDamage(unsigned int damage);
     bool IsAlive() const;
-    int GetHitpoints() const;
+    unsigned int GetHitpoints() const;
     void ResetHitpoints();
     int GetId() const;
     int GetTeamId() const;
   private:
     int id;
     int teamId;
-    int hitpoints;
-    int fire_cooldown_;
+    unsigned int hitpoints;
+    unsigned int fire_cooldown_;
     b2Body* body_;
     b2Body* turret;
     b2RevoluteJoint* joint;

@@ -4,7 +4,7 @@ class Renderer {
   public:
     Renderer();
     ~Renderer();
-    void Render(Env &env);
+    void Render(const Env &env);
   private:
     SDL_Window* window;
     SDL_Renderer* gRenderer;

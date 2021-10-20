@@ -156,16 +156,15 @@ void Renderer::DrawTank(const Tank& tank) {
   SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
 }
 
-void Renderer::Render(Env &env) {
+void Renderer::Render(const Env &env) {
   SDL_SetRenderDrawColor(gRenderer, 0xBC, 0xB6, 0x54, 0xFF );
   SDL_RenderClear(gRenderer);
   DrawArena(env.GetArenaSize());
 
-  std::vector<Tank*> tanks = env.GetTanks();
-  for (Tank* tank : tanks) {
+  for (const Tank* tank : env.GetTanks()) {
     DrawTank(*tank);
   }
-  for (Bullet* bullet : env.GetBullets()) {
+  for (const Bullet* bullet : env.GetBullets()) {
     DrawBullet(*bullet);
   }
 

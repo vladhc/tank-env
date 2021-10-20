@@ -6,10 +6,10 @@
 TEST(EnvTest, EpisodeCompleteWhenSecondTeamIsDead) {
   // GIVEN
   Env env;
-  for (Tank* tank : env.GetTanks()) {
+  for (auto tank : env.GetTanks()) {
     if (tank->GetTeamId() == 1) {
       int hp = tank->GetHitpoints();
-      tank->TakeDamage(hp);
+      env.DamageTank(tank->GetId(), hp);
     }
   }
 
@@ -26,10 +26,10 @@ TEST(EnvTest, EpisodeNoCompleteWhenTeamsAlive) {
   // Kill 1 tank of each team
   // int teamIds[] = {0, 1};
   for (int teamId : {0, 1}) {
-    for (Tank* tank : env.GetTanks()) {
+    for (auto tank : env.GetTanks()) {
       if (tank->GetTeamId() == teamId) {
         int hp = tank->GetHitpoints();
-        tank->TakeDamage(hp);
+        env.DamageTank(tank->GetId(), hp);
         break;
       }
     }
@@ -47,10 +47,10 @@ TEST(EnvTest, DeadTankIsReturnedOnce) {
   Env env;
   // Kill 1 tank
   const int tankId = 0;
-  for (Tank* tank : env.GetTanks()) {
+  for (auto tank : env.GetTanks()) {
     if (tank->GetId() == tankId) {
       int hp = tank->GetHitpoints();
-      tank->TakeDamage(hp);
+      env.DamageTank(tank->GetId(), hp);
       break;
     }
   }
@@ -63,7 +63,7 @@ TEST(EnvTest, DeadTankIsReturnedOnce) {
   // THEN
   bool tankExported = false;
   for (Observation obs : std::get<0>(step1)) {
-    if (obs.hero->GetId() == tankId) {
+    if (obs.heroId == tankId) {
       tankExported = true;
       break;
     }
@@ -72,7 +72,7 @@ TEST(EnvTest, DeadTankIsReturnedOnce) {
 
   tankExported = false;
   for (Observation obs : std::get<0>(step2)) {
-    if (obs.hero->GetId() == tankId) {
+    if (obs.heroId == tankId) {
       tankExported = true;
       break;
     }
@@ -86,10 +86,10 @@ TEST(EnvTest, DeadTankIsDoneAndPunished) {
   // Kill 1 tank of each team
   // int teamIds[] = {0, 1};
   int tankId = 0;
-  for (Tank* tank : env.GetTanks()) {
+  for (auto tank : env.GetTanks()) {
     if (tank->GetId() == tankId) {
       int hp = tank->GetHitpoints();
-      tank->TakeDamage(hp);
+      env.DamageTank(tank->GetId(), hp);
       break;
     }
   }
@@ -108,7 +108,7 @@ TEST(EnvTest, DeadTankIsDoneAndPunished) {
 
   for (int i=0; i < observations.size(); i++) {
     Observation obs = observations[i];
-    if (obs.hero->GetId() == tankId) {
+    if (obs.heroId == tankId) {
       reward = rewards[i];
       done = dones[i];
       break;
@@ -123,7 +123,7 @@ TEST(EnvTest, ResetRemovesBullets) {
   // GIVEN
   Env env;
   std::map<int, Action> actions;
-  for (Tank* tank : env.GetTanks()) {
+  for (auto tank : env.GetTanks()) {
     actions[tank->GetId()] = Action{0, 0, true};
   }
   env.Step(actions);

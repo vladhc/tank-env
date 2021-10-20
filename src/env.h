@@ -12,8 +12,8 @@
 const float TIME_STEP = 1.0f / 15.0f;
 
 struct Observation {
-  const Tank* hero;
-  const std::vector<const Tank*> allies;
+  const int heroId;
+  const std::vector<const Tank*> tanks;
   const float arenaSize;
   const StrategicPoint* strategicPoint;
   const std::vector<const Bullet*> bullets;
@@ -29,10 +29,11 @@ class Env {
       std::vector<float>,
       std::vector<char>
     > Step(const std::map<int, Action> actions);
-    std::vector<Tank*> GetTanks();
-    StrategicPoint* GetStrategicPoint();
+    std::vector<const Tank*> GetTanks() const;
+    void DamageTank(int tankId, unsigned int damage);
+    const StrategicPoint* GetStrategicPoint() const;
     float GetArenaSize() const;
-    std::vector<Bullet*> GetBullets();
+    std::vector<const Bullet*> GetBullets() const;
     bool EpisodeComplete() const;
   private:
     std::vector<Observation> CreateObservations() const;

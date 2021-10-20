@@ -70,25 +70,29 @@ py::array_t<float> encodeObservation(const Observation &obs) {
     ret[idx++] = obs.arenaSize;
 
     // Tank
-    ret[idx++] = obs.hero->GetHitpoints();
-    ret[idx++] = obs.hero->GetFireCooldown();
+    const Tank* hero = obs.tanks[obs.heroId];
+    ret[idx++] = hero->GetHitpoints();
+    ret[idx++] = hero->GetFireCooldown();
 
-    ret[idx++] = obs.hero->GetPosition().x;
-    ret[idx++] = obs.hero->GetPosition().y;
-    ret[idx++] = normalizeAngle(obs.hero->GetAngle());
-    ret[idx++] = normalizeAngle(obs.hero->GetTurretAngle());
-    ret[idx++] = obs.hero->GetLinearVelocity().x;
-    ret[idx++] = obs.hero->GetLinearVelocity().y;
-    ret[idx++] = obs.hero->GetLinearVelocity().Length();
-    ret[idx++] = obs.hero->GetAngularVelocity();
-    ret[idx++] = obs.hero->GetTurretAngularVelocity();
+    ret[idx++] = hero->GetPosition().x;
+    ret[idx++] = hero->GetPosition().y;
+    ret[idx++] = normalizeAngle(hero->GetAngle());
+    ret[idx++] = normalizeAngle(hero->GetTurretAngle());
+    ret[idx++] = hero->GetLinearVelocity().x;
+    ret[idx++] = hero->GetLinearVelocity().y;
+    ret[idx++] = hero->GetLinearVelocity().Length();
+    ret[idx++] = hero->GetAngularVelocity();
+    ret[idx++] = hero->GetTurretAngularVelocity();
 
-    for (const Tank* ally : obs.allies) {
-      idx = write(ally, obs.hero, ret, idx);
+    for (const Tank* tank : obs.tanks) {
+      if (tank->GetId() == obs.heroId) {
+        continue;
+      }
+      idx = write(tank, hero, ret, idx);
     }
 
     // StrategicPoint
-    b2Vec2 pos = obs.hero->GetLocalPoint(obs.strategicPoint->GetPosition());
+    b2Vec2 pos = hero->GetLocalPoint(obs.strategicPoint->GetPosition());
     ret[idx++] = pos.Length();
     ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 
@@ -112,7 +116,7 @@ PYBIND11_MODULE(tanks, m) {
 
               py::dict obsMap;
               for (unsigned int i=0; i < obs.size(); i++) {
-                int tankId = obs[i].hero->GetId();
+                const int tankId = obs[i].heroId;
                 py::int_ idx = py::int_(tankId);
                 obsMap[idx] = encodeObservation(obs[i]);
               }
@@ -153,7 +157,7 @@ PYBIND11_MODULE(tanks, m) {
                 float reward = rewards[i];
 
                 if (!done || reward != 0) {
-                  int tankId = obs[i].hero->GetId();
+                  const int tankId = obs[i].heroId;
                   py::int_ idx = py::int_(tankId);
 
                   obsMap[idx] = encodeObservation(obs[i]);

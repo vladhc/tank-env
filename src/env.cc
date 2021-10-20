@@ -96,27 +96,17 @@ Env::~Env() {
 
 std::vector<Observation> Env::CreateObservations() const {
   std::vector<Observation> obs;
-  std::vector<const Bullet*> bulletsImmutable;
-  for (const Bullet* bullet : bullets) {
-    bulletsImmutable.push_back(bullet);
-  }
   for (const Tank* hero : tanks) {
-    auto tankId = hero->GetId();
-    if (!alivePrevStep[tankId]) {
+    auto heroId = hero->GetId();
+    if (!alivePrevStep[heroId]) {
       continue;
     }
-    std::vector<const Tank*> exceptHero;
-    for (const Tank* tank : tanks) {
-      if (tank != hero) {
-        exceptHero.push_back(tank);
-      }
-    }
     obs.push_back(Observation {
-      hero,
-      exceptHero,
+      heroId,
+      GetTanks(),
       ARENA_SIZE,
       strategicPoint,
-      bulletsImmutable,
+      GetBullets(),
     });
   }
   return obs;
@@ -136,7 +126,7 @@ std::vector<Observation> Env::Reset() {
     const float angle = (x > 0) ? M_PI : 0;
 
     unsigned int yCoordIdx = 0;
-    for (Tank* tank : GetTanks()) {
+    for (Tank* tank : tanks) {
       if (tank->GetTeamId() != teamId) {
         continue;
       }
@@ -197,7 +187,7 @@ std::tuple<
   while (collisionProcessor->PollEvent(&c)) {
     if (c.bullet != NULL) {
       if (c.tank != NULL) {
-        c.tank->TakeDamage(30);
+        DamageTank(c.tank->GetId(), 30);
       }
       deleteBullet(c.bullet);
     }
@@ -211,7 +201,7 @@ std::tuple<
   // Evaluate per-team reward
   float teamRewards[] = {0.0f, 0.0f};
   for (const Observation &ob : obs) {
-    const Tank* tank = ob.hero;
+    const Tank* tank = ob.tanks[ob.heroId];
     const int teamId = tank->GetTeamId();
     if (strategicPoint->GetOwner() == tank) {
       teamRewards[teamId] += 0.1f;
@@ -226,7 +216,7 @@ std::tuple<
   std::vector<char> dones;
 
   for (const Observation &ob : obs) {
-    const Tank* tank = ob.hero;
+    const Tank* tank = ob.tanks[ob.heroId];
     float reward = teamRewards[tank->GetTeamId()];
     rewards.push_back(reward);
     dones.push_back(!tank->IsAlive());
@@ -240,15 +230,28 @@ std::tuple<
   return std::make_tuple(obs, rewards, dones);
 }
 
-std::vector<Tank*> Env::GetTanks() {
-  return tanks;
+std::vector<const Tank*> Env::GetTanks() const {
+  std::vector<const Tank*> tanksImmutable;
+  for (const Tank* tank : tanks) {
+    tanksImmutable.push_back(tank);
+  }
+  return tanksImmutable;
 }
 
-std::vector<Bullet*> Env::GetBullets() {
-  return bullets;
+void Env::DamageTank(int tankId, unsigned int damage) {
+  auto tank = tanks[tankId];
+  tank->TakeDamage(damage);
 }
 
-StrategicPoint* Env::GetStrategicPoint() {
+std::vector<const Bullet*> Env::GetBullets() const {
+  std::vector<const Bullet*> bulletsImmutable;
+  for (const Bullet* bullet : bullets) {
+    bulletsImmutable.push_back(bullet);
+  }
+  return bulletsImmutable;
+}
+
+const StrategicPoint* Env::GetStrategicPoint() const {
   return strategicPoint;
 }
 
