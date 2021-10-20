@@ -63,15 +63,27 @@ Tank::~Tank() {
   body_->GetWorld()->DestroyBody(body_);
 }
 
-float Tank::GetAngle() {
+float Tank::GetAngle() const {
   return body_->GetAngle();
 }
 
-b2Vec2 Tank::GetPosition() {
+float Tank::GetAngularVelocity() const {
+  return body_->GetAngularVelocity();
+}
+
+b2Vec2 Tank::GetPosition() const {
   return body_->GetPosition();
 }
 
-float Tank::GetSize() {
+b2Vec2 Tank::GetLocalPoint(b2Vec2 globalPoint) const {
+  return body_->GetLocalPoint(globalPoint);
+}
+
+b2Vec2 Tank::GetLinearVelocity() const {
+  return body_->GetLinearVelocity();
+}
+
+float Tank::GetSize() const {
   return WIDTH;
 }
 
@@ -81,6 +93,14 @@ b2Body* Tank::GetBody() {
 
 b2Body* Tank::GetTurret() {
   return turret;
+}
+
+float Tank::GetTurretAngle() const {
+  return turret->GetAngle();
+}
+
+float Tank::GetTurretAngularVelocity() const {
+  return turret->GetAngularVelocity();
 }
 
 float min(float a, float b) {
@@ -159,7 +179,7 @@ Bullet* Tank::Fire() {
   );
 }
 
-int Tank::GetFireCooldown() {
+int Tank::GetFireCooldown() const {
   return fire_cooldown_;
 }
 
@@ -167,11 +187,11 @@ void Tank::TakeDamage(const int damage) {
   hitpoints = max(0, hitpoints - damage);
 }
 
-bool Tank::IsAlive() {
+bool Tank::IsAlive() const {
   return hitpoints > 0;
 }
 
-int Tank::GetHitpoints() {
+int Tank::GetHitpoints() const {
   return hitpoints;
 }
 
@@ -179,22 +199,22 @@ void Tank::ResetHitpoints() {
   hitpoints = MAX_HITPOINTS;
 }
 
-int Tank::GetId() {
+int Tank::GetId() const {
   return id;
 }
 
-int Tank::GetTeamId() {
+int Tank::GetTeamId() const {
   return teamId;
 }
 
-void printTank(Tank *tank) {
+void printTank(const Tank& tank) {
   std::cout << "<Tank";
-  std::cout << " hitPoints=" << tank->GetHitpoints() << ";";
-  b2Vec2 pos = tank->GetPosition();
+  std::cout << " hitPoints=" << tank.GetHitpoints() << ";";
+  b2Vec2 pos = tank.GetPosition();
   std::cout << " position=(" << pos.x << ", " << pos.y << ");";
-  std::cout << " angle=" << tank->GetAngle() << "pi;";
-  b2Vec2 velocity = tank->GetBody()->GetLinearVelocity();
+  std::cout << " angle=" << tank.GetAngle() << "pi;";
+  b2Vec2 velocity = tank.GetLinearVelocity();
   std::cout << " velocity=(" << velocity.x << ", " << velocity.y << "); ";
-  std::cout << " angVelocity=" << tank->GetBody()->GetAngularVelocity() << "; ";
+  std::cout << " angVelocity=" << tank.GetAngularVelocity() << "; ";
   std::cout << ">" << std::endl;
 }

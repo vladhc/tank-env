@@ -87,8 +87,8 @@ void Renderer::DrawArena(float size) {
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
 }
 
-void Renderer::DrawStrategicPoint(StrategicPoint* point) {
-  b2Vec2 pos = point->GetPosition();
+void Renderer::DrawStrategicPoint(const StrategicPoint& point) {
+  b2Vec2 pos = point.GetPosition();
   SDL_SetRenderDrawColor(gRenderer, 0x72, 0x72, 0x18, 0x80);
   SDL_Rect rect{
     int(pos.x * SCALE - 2 + OFFSET_X),
@@ -100,8 +100,8 @@ void Renderer::DrawStrategicPoint(StrategicPoint* point) {
   SDL_RenderFillRect(gRenderer, &rect);
 }
 
-void Renderer::DrawBullet(Bullet* bullet) {
-  b2Vec2 pos = bullet->GetBody()->GetPosition();
+void Renderer::DrawBullet(const Bullet& bullet) {
+  b2Vec2 pos = bullet.GetPosition();
   SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x72, 0x18, 0xFF);
   SDL_Rect rect{
     int(pos.x * SCALE - 5 + OFFSET_X),
@@ -112,10 +112,10 @@ void Renderer::DrawBullet(Bullet* bullet) {
   SDL_RenderFillRect(gRenderer, &rect);
 }
 
-void Renderer::DrawTank(Tank* tank) {
-  b2Vec2 pos = tank->GetPosition();
-  float angle = tank->GetAngle();
-  float size = tank->GetSize();
+void Renderer::DrawTank(const Tank& tank) {
+  const b2Vec2 pos = tank.GetPosition();
+  const float angle = tank.GetAngle();
+  const float size = tank.GetSize();
 
   SDL_Point points[TANK_BODY_POINTS_COUNT];
 
@@ -132,15 +132,14 @@ void Renderer::DrawTank(Tank* tank) {
     };
   }
   uint8 alpha = 0xFF;
-  if (!tank->IsAlive()) {
+  if (!tank.IsAlive()) {
     alpha = 0x88;
   }
   SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, alpha);
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
 
   // Light lines (turret top)
-  b2Vec2 turretPos = tank->GetTurret()->GetPosition();
-  float turretAngle = tank->GetTurret()->GetAngle();
+  const float turretAngle = tank.GetTurretAngle();
   SDL_Point turretPoints[TANK_TURRET_POINTS_COUNT];
   for (int i=0; i < TANK_TURRET_POINTS_COUNT; i++) {
     Point pt = Point{
@@ -148,8 +147,8 @@ void Renderer::DrawTank(Tank* tank) {
       TANK_TURRET_POINTS[i].y * size
     };
     turretPoints[i] = SDL_Point{
-      int((turretPos.x + pt.x * cos(turretAngle) - pt.y * sin(turretAngle)) * SCALE + OFFSET_X),
-      int((turretPos.y + pt.y * cos(turretAngle) + pt.x * sin(turretAngle)) * SCALE + OFFSET_Y)
+      int((pos.x + pt.x * cos(turretAngle) - pt.y * sin(turretAngle)) * SCALE + OFFSET_X),
+      int((pos.y + pt.y * cos(turretAngle) + pt.x * sin(turretAngle)) * SCALE + OFFSET_Y)
     };
     turretPoints[i].y = turretPoints[i].y - int(TANK_LAYER_OFFSET * SCALE);
   }
@@ -164,12 +163,12 @@ void Renderer::Render(Env &env) {
 
   std::vector<Tank*> tanks = env.GetTanks();
   for (Tank* tank : tanks) {
-    DrawTank(tank);
+    DrawTank(*tank);
   }
   for (Bullet* bullet : env.GetBullets()) {
-    DrawBullet(bullet);
+    DrawBullet(*bullet);
   }
 
-  DrawStrategicPoint(env.GetStrategicPoint());
+  DrawStrategicPoint(*env.GetStrategicPoint());
   SDL_RenderPresent(gRenderer);
 }

@@ -8,7 +8,7 @@ class StrategicPoint : public GameObject {
     ~StrategicPoint();
     Tank* GetOwner();
     void SetOwner(Tank* tank);
-    b2Vec2 GetPosition();
+    b2Vec2 GetPosition() const;
   private:
     b2Body* body;
     Tank* owner;

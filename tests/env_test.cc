@@ -46,7 +46,7 @@ TEST(EnvTest, DeadTankIsReturnedOnce) {
   // GIVEN
   Env env;
   // Kill 1 tank
-  int tankId = 0;
+  const int tankId = 0;
   for (Tank* tank : env.GetTanks()) {
     if (tank->GetId() == tankId) {
       int hp = tank->GetHitpoints();

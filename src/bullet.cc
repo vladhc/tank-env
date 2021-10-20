@@ -32,8 +32,12 @@ Bullet::~Bullet() {
   body = NULL;
 }
 
-b2Body* Bullet::GetBody() {
-  return body;
+b2Vec2 Bullet::GetPosition() const {
+  return body->GetPosition();
+}
+
+float Bullet::GetAngle() const {
+  return body->GetAngle();
 }
 
 GameObject* Bullet::GetOwner() {

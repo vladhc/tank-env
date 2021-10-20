@@ -7,20 +7,25 @@ class Tank : public GameObject {
   public:
     Tank(int id, int teamId, b2World* world);
     ~Tank();
-    float GetAngle();
-    b2Vec2 GetPosition();
-    float GetSize();
+    float GetAngle() const;
+    float GetAngularVelocity() const;
+    b2Vec2 GetPosition() const;
+    b2Vec2 GetLinearVelocity() const;
+    b2Vec2 GetLocalPoint(b2Vec2 globalPoint) const;
+    float GetSize() const;
     b2Body* GetBody();
     b2Body* GetTurret();
+    float GetTurretAngle() const;
+    float GetTurretAngularVelocity() const;
     void Drive(float anglePower, float turretAnglePower, float power);
     Bullet* Fire();
-    int GetFireCooldown();
+    int GetFireCooldown() const;
     void TakeDamage(int damage);
-    bool IsAlive();
-    int GetHitpoints();
+    bool IsAlive() const;
+    int GetHitpoints() const;
     void ResetHitpoints();
-    int GetId();
-    int GetTeamId();
+    int GetId() const;
+    int GetTeamId() const;
   private:
     int id;
     int teamId;
@@ -31,4 +36,4 @@ class Tank : public GameObject {
     b2RevoluteJoint* joint;
 };
 
-void printTank(Tank *tank);
+void printTank(const Tank& tank);

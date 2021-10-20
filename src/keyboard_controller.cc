@@ -3,18 +3,18 @@
 #include <SDL2/SDL.h>
 
 KeyboardController::KeyboardController():
-  left(false),
-  right(false),
-  turretLeft(false),
-  turretRight(false),
-  up(false),
-  down(false),
-  fire(false),
-  exit(false)
+  left{false},
+  right{false},
+  turretLeft{false},
+  turretRight{false},
+  up{false},
+  down{false},
+  fire{false},
+  exit{false}
 {
 }
 
-bool KeyboardController::IsExit() {
+bool KeyboardController::IsExit() const {
   return exit;
 }
 

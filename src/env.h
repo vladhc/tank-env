@@ -12,11 +12,11 @@
 const float TIME_STEP = 1.0f / 15.0f;
 
 struct Observation {
-  Tank* hero;
-  std::vector<Tank*> allies;
-  float arenaSize;
-  StrategicPoint* strategicPoint;
-  std::vector<Bullet*> bullets;
+  const Tank* hero;
+  const std::vector<const Tank*> allies;
+  const float arenaSize;
+  const StrategicPoint* strategicPoint;
+  const std::vector<const Bullet*> bullets;
 };
 
 class Env {
@@ -28,15 +28,14 @@ class Env {
       std::vector<Observation>,
       std::vector<float>,
       std::vector<char>
-    > Step(std::map<int, Action> actions);
+    > Step(const std::map<int, Action> actions);
     std::vector<Tank*> GetTanks();
     StrategicPoint* GetStrategicPoint();
-    float GetArenaSize();
+    float GetArenaSize() const;
     std::vector<Bullet*> GetBullets();
-    bool EpisodeComplete();
+    bool EpisodeComplete() const;
   private:
-    std::vector<Observation> CreateObservations();
-    int tanksCount;
+    std::vector<Observation> CreateObservations() const;
     std::vector<Tank*> tanks;
     std::vector<Bullet*> bullets;
     b2World* world_;
@@ -45,7 +44,3 @@ class Env {
     void deleteBullet(Bullet* bullet);
     std::vector<char> alivePrevStep; // tankId -> wasAlivePreviousStep
 };
-
-void moveTank(Tank *tank);
-
-void rotateTank(Tank *tank);

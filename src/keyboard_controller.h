@@ -4,7 +4,7 @@ class KeyboardController {
   public:
     KeyboardController();
     Action GetAction();
-    bool IsExit();
+    bool IsExit() const;
   private:
     bool left;
     bool right;

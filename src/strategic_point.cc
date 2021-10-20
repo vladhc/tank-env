@@ -37,7 +37,7 @@ void StrategicPoint::SetOwner(Tank* tank) {
   owner = tank;
 }
 
-b2Vec2 StrategicPoint::GetPosition() {
+b2Vec2 StrategicPoint::GetPosition() const {
   return body->GetPosition();
 }
 

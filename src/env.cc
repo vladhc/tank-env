@@ -94,18 +94,19 @@ Env::~Env() {
   delete world_;
 }
 
-std::vector<Observation> Env::CreateObservations() {
+std::vector<Observation> Env::CreateObservations() const {
   std::vector<Observation> obs;
-  for (Tank* hero : tanks) {
-    const int id = hero->GetId();
-    const bool alive = hero->IsAlive();
-    if (!alive && !alivePrevStep[id]) {
+  std::vector<const Bullet*> bulletsImmutable;
+  for (const Bullet* bullet : bullets) {
+    bulletsImmutable.push_back(bullet);
+  }
+  for (const Tank* hero : tanks) {
+    auto tankId = hero->GetId();
+    if (!alivePrevStep[tankId]) {
       continue;
     }
-    alivePrevStep[id] = alive;
-
-    std::vector<Tank*> exceptHero;
-    for (Tank* tank : tanks) {
+    std::vector<const Tank*> exceptHero;
+    for (const Tank* tank : tanks) {
       if (tank != hero) {
         exceptHero.push_back(tank);
       }
@@ -115,7 +116,7 @@ std::vector<Observation> Env::CreateObservations() {
       exceptHero,
       ARENA_SIZE,
       strategicPoint,
-      bullets,
+      bulletsImmutable,
     });
   }
   return obs;
@@ -127,8 +128,8 @@ std::vector<Observation> Env::Reset() {
   }
 
   // Reset tanks position and angle
-  float yCoords[] = {-15, -7.5, 0, 7.5, 15};
-  int teamIds[] = {0, 1};
+  const float yCoords[] = {-15, -7.5, 0, 7.5, 15};
+  const int teamIds[] = {0, 1};
 
   for (const int teamId : teamIds) {
     const int x = teamId == 0 ? 15 : -15;
@@ -171,7 +172,7 @@ std::tuple<
   std::vector<Observation>,
   std::vector<float>,
   std::vector<char>
-> Env::Step(std::map<int, Action> actions) {
+> Env::Step(const std::map<int, Action> actions) {
 
   // Apply actions
   for (const auto &x : actions) {
@@ -210,7 +211,7 @@ std::tuple<
   // Evaluate per-team reward
   float teamRewards[] = {0.0f, 0.0f};
   for (const Observation &ob : obs) {
-    Tank* tank = ob.hero;
+    const Tank* tank = ob.hero;
     const int teamId = tank->GetTeamId();
     if (strategicPoint->GetOwner() == tank) {
       teamRewards[teamId] += 0.1f;
@@ -225,10 +226,15 @@ std::tuple<
   std::vector<char> dones;
 
   for (const Observation &ob : obs) {
-    Tank* tank = ob.hero;
+    const Tank* tank = ob.hero;
     float reward = teamRewards[tank->GetTeamId()];
     rewards.push_back(reward);
     dones.push_back(!tank->IsAlive());
+  }
+
+  for (const Tank* tank : tanks) {
+    const int id = tank->GetId();
+    alivePrevStep[id] = tank->IsAlive();
   }
 
   return std::make_tuple(obs, rewards, dones);
@@ -246,13 +252,13 @@ StrategicPoint* Env::GetStrategicPoint() {
   return strategicPoint;
 }
 
-float Env::GetArenaSize() {
+float Env::GetArenaSize() const {
   return ARENA_SIZE;
 }
 
-bool Env::EpisodeComplete() {
+bool Env::EpisodeComplete() const {
   bool teamAlive[] = {false, false};
-  for (Tank* tank : tanks) {
+  for (const Tank* tank : tanks) {
     if (!tank->IsAlive()) {
       continue;
     }
