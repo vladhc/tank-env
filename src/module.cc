@@ -57,11 +57,11 @@ int write(const Tank* tank, const Tank* hero, float* arr, unsigned int idx) {
   arr[idx++] = tank->GetTurretAngularVelocity();
 
   // In hero coordinates
-  b2Vec2 pos = hero->GetLocalPoint(tank->GetPosition());
+  const b2Vec2 pos = hero->GetLocalPoint(tank->GetPosition());
   arr[idx++] = pos.Length();
-  arr[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
-  b2Vec2 turretPos = hero->GetTurretLocalPoint(tank->GetPosition());
-  arr[idx++] = normalizeAngle(atan2(turretPos.x, turretPos.y), true);
+  arr[idx++] = normalizeAngle(getAngle(pos), true);
+  const b2Vec2 posRelativeToTurret = hero->GetTurretLocalPoint(tank->GetPosition());
+  arr[idx++] = normalizeAngle(getAngle(posRelativeToTurret), true);
   return idx;
 }
 

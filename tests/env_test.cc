@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdlib.h>
 #include <gtest/gtest.h>
 #include "tank.h"
 #include "env.h"
@@ -188,7 +187,6 @@ TEST(EnvTest, ResetDoesntMakeTanksOverlap) {
         float distance = (posA - posB).Length();
         float expectedDistance = sizeA + sizeB;
         ASSERT_TRUE(distance >= expectedDistance);
-
       }
     }
   }

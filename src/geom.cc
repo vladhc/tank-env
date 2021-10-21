@@ -21,3 +21,7 @@ float normalizeAngle(float angle, bool plusMinusPi) {
   }
   return angle;
 }
+
+float getAngle(const b2Vec2& pos) {
+  return atan2(pos.y, pos.x);
+}
