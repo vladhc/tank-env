@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 #include <gtest/gtest.h>
 #include "tank.h"
 #include "env.h"
@@ -133,4 +134,62 @@ TEST(EnvTest, ResetRemovesBullets) {
 
   // THEN
   ASSERT_TRUE(env.GetBullets().empty());
+}
+
+TEST(EnvTest, RandomplyPlacesTanksOnTheArena) {
+  // GIVEN
+  Env env;
+  auto tanks = env.GetTanks();
+  env.Reset();
+  std::vector<float> angles(tanks.size());
+  std::vector<b2Vec2> positions(tanks.size());
+
+  for (int i=0; i < tanks.size(); i++) {
+    auto tank = tanks[i];
+    angles[i] = tank->GetAngle();
+    positions[i] = tank->GetPosition();
+  }
+
+  // WHEN
+  env.Reset();
+
+  // THEN
+  for (int i=0; i < tanks.size(); i++) {
+    auto tank = tanks[i];
+    EXPECT_TRUE(tank->GetAngle() != angles[i]);
+    EXPECT_TRUE(tank->GetPosition() != positions[i]);
+  }
+}
+
+TEST(EnvTest, RestDoesntMakeTanksOverlap) {
+  // GIVEN
+  Env env;
+  const float arenaSize = env.GetArenaSize();
+  auto tanks = env.GetTanks();
+
+  for (int iteration=0; iteration < 1000; iteration++) {
+
+    // WHEN
+    env.Reset();
+
+    // THEN
+    for (int i=0; i < tanks.size(); i++) {
+      auto posA = tanks[i]->GetPosition();
+      float sizeA = tanks[i]->GetSize();
+
+      // check doesn't collide with the arena
+      ASSERT_TRUE(posA.x <= (arenaSize - sizeA));
+      ASSERT_TRUE(posA.x >= (-arenaSize + sizeA));
+
+      // Check doesn't collide with other tanks
+      for (int j=i+1; j < tanks.size(); j++) {
+        auto posB = tanks[j]->GetPosition();
+        float sizeB = tanks[j]->GetSize();
+        float distance = (posA - posB).Length();
+        float expectedDistance = sizeA + sizeB;
+        ASSERT_TRUE(distance >= expectedDistance);
+
+      }
+    }
+  }
 }

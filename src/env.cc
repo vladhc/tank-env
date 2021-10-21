@@ -1,6 +1,8 @@
 #include <iostream>
 #include <tuple>
 #include <map>
+#include <random>
+#include <functional>
 #include <stdlib.h>
 #include "box2d/box2d.h"
 #include "tank.h"
@@ -15,6 +17,18 @@ const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
 const int VELOCITY_ITERATIONS = 24;
 const int POSITION_ITERATIONS = 8;
 const int TANKS_COUNT = 10;
+
+class BodyCheckerCallback : public b2QueryCallback {
+  public:
+    bool ReportFixture(b2Fixture* fixture) {
+      foundBodies = true;
+      return false;
+    }
+    void Reset() { foundBodies = false; }
+    bool FoundBodies() const { return foundBodies; }
+  private:
+    bool foundBodies;
+};
 
 Env::Env() {
   b2Vec2 gravity(0.0f, 0.0f);
@@ -117,29 +131,38 @@ std::vector<Observation> Env::Reset() {
     deleteBullet(bullets[0]);
   }
 
-  // Reset tanks position and angle
-  const float yCoords[] = {-15, -7.5, 0, 7.5, 15};
-  const int teamIds[] = {0, 1};
+  static std::mt19937 random_engine;
+  static auto angle_gen = std::bind(
+      std::uniform_real_distribution<float> {0, 2 * M_PI},
+      random_engine
+  );
+  static auto coord_gen = std::bind(
+      std::uniform_real_distribution<float> {-ARENA_SIZE, ARENA_SIZE},
+      random_engine
+  );
+  BodyCheckerCallback bodyCheckerCallback;
 
-  for (const int teamId : teamIds) {
-    const int x = teamId == 0 ? 15 : -15;
-    const float angle = M_PI / 2;
+  for (Tank* tank : tanks) {
+    const float angle = angle_gen();
+    const float margin = tank->GetSize() + tank->GetSize() * 0.5;
 
-    unsigned int yCoordIdx = 0;
-    for (Tank* tank : tanks) {
-      if (tank->GetTeamId() != teamId) {
-        continue;
-      }
-      const int y = yCoords[yCoordIdx];
-      const auto pos = b2Vec2(x, y);
-      tank->GetBody()->SetTransform(pos, angle);
-      tank->GetTurret()->SetTransform(pos, angle);
-      yCoordIdx++;
+    b2Vec2 pos;
+    do {
+      pos = b2Vec2{coord_gen(), coord_gen()};
+      b2AABB aabbQuery;
+      aabbQuery.lowerBound = b2Vec2{pos.x - margin, pos.y - margin};
+      aabbQuery.upperBound = b2Vec2{pos.x + margin, pos.y + margin};
 
-      const int id = tank->GetId();
-      alivePrevStep[id] = true;
-      tank->ResetHitpoints();
-    }
+      bodyCheckerCallback.Reset();
+      world_->QueryAABB(&bodyCheckerCallback, aabbQuery);
+    } while(bodyCheckerCallback.FoundBodies());
+
+    tank->GetBody()->SetTransform(pos, angle);
+    tank->GetTurret()->SetTransform(pos, angle);
+
+    const int id = tank->GetId();
+    alivePrevStep[id] = true;
+    tank->ResetHitpoints();
   }
 
   strategicPoint->SetOwner(NULL);
