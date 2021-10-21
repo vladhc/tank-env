@@ -8,11 +8,11 @@
 #include "geom.h"
 #include "renderer.h"
 
-const int MAX_BULLETS_COUNT = 15; // 1 bullet per tank
+const int MAX_BULLETS_COUNT = 4; // 1 bullet per tank
 
 // hero: 10 floats
 // 1 tank: 10 floats
-const int OBSERVATION_SIZE = 14 + 9 * 14 + MAX_BULLETS_COUNT * 3;
+const int OBSERVATION_SIZE = 14 + 1 * 15 + MAX_BULLETS_COUNT * 3;
 
 namespace py = pybind11;
 
@@ -46,8 +46,8 @@ int write(const Tank* tank, const Tank* hero, float* arr, unsigned int idx) {
   arr[idx++] = tank->GetHitpoints();
   arr[idx++] = tank->GetFireCooldown();
 
-  arr[idx++] = tank->GetPosition().x;
-  arr[idx++] = tank->GetPosition().y;
+  arr[idx++] = tank->GetPosition().x - hero->GetPosition().x;
+  arr[idx++] = tank->GetPosition().y - hero->GetPosition().y;
   arr[idx++] = normalizeAngle(tank->GetAngle());
   arr[idx++] = normalizeAngle(tank->GetTurretAngle());
   arr[idx++] = tank->GetLinearVelocity().x;
@@ -60,6 +60,8 @@ int write(const Tank* tank, const Tank* hero, float* arr, unsigned int idx) {
   b2Vec2 pos = hero->GetLocalPoint(tank->GetPosition());
   arr[idx++] = pos.Length();
   arr[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
+  b2Vec2 turretPos = hero->GetTurretLocalPoint(tank->GetPosition());
+  arr[idx++] = normalizeAngle(atan2(turretPos.x, turretPos.y), true);
   return idx;
 }
 

@@ -20,22 +20,22 @@ const float WIDTH = 1.5f;
 const float HEIGHT = 0.75f;
 
 Tank::Tank(int id, int teamId, b2World* world) :
-    GameObject(TANK),
+    GameObject{TANK},
     id{id},
     teamId{teamId},
     hitpoints{MAX_HITPOINTS},
-    fire_cooldown_{0}
+    fire_cooldown{0}
 {
   // Body
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;
 
-  body_ = world->CreateBody(&bodyDef);
-  body_->SetUserData(this);
+  body = world->CreateBody(&bodyDef);
+  body->SetUserData(this);
 
   b2PolygonShape tankShape;
   tankShape.SetAsBox(WIDTH, HEIGHT);
-  body_->CreateFixture(&tankShape, 1.0f);
+  body->CreateFixture(&tankShape, 1.0f);
 
   // Turret
   b2BodyDef turretDef;
@@ -50,7 +50,7 @@ Tank::Tank(int id, int teamId, b2World* world) :
 
   // Joint
   b2RevoluteJointDef jointDef;
-  jointDef.bodyA = body_;
+  jointDef.bodyA = body;
   jointDef.bodyB = turret;
   jointDef.collideConnected = false;
   jointDef.enableMotor = true;
@@ -60,27 +60,40 @@ Tank::Tank(int id, int teamId, b2World* world) :
 }
 
 Tank::~Tank() {
-  body_->GetWorld()->DestroyBody(body_);
+  body->GetWorld()->DestroyBody(body);
+}
+
+void Tank::SetTransform(const b2Vec2& position, float angle) {
+  SetTransform(position, angle, angle);
+}
+
+void Tank::SetTransform(const b2Vec2& position, float bodyAngle, float turretAngle) {
+  body->SetTransform(position, bodyAngle);
+  turret->SetTransform(position, turretAngle);
 }
 
 float Tank::GetAngle() const {
-  return body_->GetAngle();
+  return body->GetAngle();
 }
 
 float Tank::GetAngularVelocity() const {
-  return body_->GetAngularVelocity();
+  return body->GetAngularVelocity();
 }
 
 b2Vec2 Tank::GetPosition() const {
-  return body_->GetPosition();
+  return body->GetPosition();
 }
 
-b2Vec2 Tank::GetLocalPoint(b2Vec2 globalPoint) const {
-  return body_->GetLocalPoint(globalPoint);
+b2Vec2 Tank::GetLocalPoint(const b2Vec2& globalPoint) const {
+  return body->GetLocalPoint(globalPoint);
+}
+
+b2Vec2 Tank::GetTurretLocalPoint(const b2Vec2& globalPoint) const {
+  return turret->GetLocalPoint(globalPoint);
 }
 
 b2Vec2 Tank::GetLinearVelocity() const {
-  return body_->GetLinearVelocity();
+  return body->GetLinearVelocity();
 }
 
 float Tank::GetSize() const {
@@ -88,7 +101,7 @@ float Tank::GetSize() const {
 }
 
 b2Body* Tank::GetBody() {
-  return body_;
+  return body;
 }
 
 b2Body* Tank::GetTurret() {
@@ -122,14 +135,14 @@ void Tank::Drive(float anglePower, float turretAnglePower, float power) {
     return;
   }
   // Turn if needed
-  float angularVelocity = body_->GetAngularVelocity();
+  float angularVelocity = body->GetAngularVelocity();
   if (anglePower != 0.0f && abs(angularVelocity) < MAX_ANGULARY_VELOCITY) {
     // Normalize anglePower
     anglePower = min(anglePower, 1.0f);
     anglePower = max(anglePower, -1.0f);
 
     float torque = anglePower * ANGLE_TORQUE;
-    body_->ApplyAngularImpulse(torque, true);
+    body->ApplyAngularImpulse(torque, true);
   }
 
   // Turn turret
@@ -143,14 +156,14 @@ void Tank::Drive(float anglePower, float turretAnglePower, float power) {
   }
 
   // accelerate if needed
-  b2Vec2 velocity = body_->GetLinearVelocity();
+  b2Vec2 velocity = body->GetLinearVelocity();
   if (power != 0 && velocity.Length() < MAX_VELOCITY) {
     power = min(power, 1.0f);
     power = max(power, -1.0f);
 
     float acceleration = ACCELERATION * power;
-    b2Vec2 frontVec = body_->GetWorldVector(b2Vec2(1, 0));
-    body_->ApplyLinearImpulseToCenter(
+    b2Vec2 frontVec = body->GetWorldVector(b2Vec2(1, 0));
+    body->ApplyLinearImpulseToCenter(
         b2Vec2(
           frontVec.x * acceleration,
           frontVec.y * acceleration
@@ -159,16 +172,16 @@ void Tank::Drive(float anglePower, float turretAnglePower, float power) {
     );
   }
 
-  if (fire_cooldown_ > 0) {
-    fire_cooldown_--;
+  if (fire_cooldown > 0) {
+    fire_cooldown--;
   }
 }
 
 Bullet* Tank::Fire() {
-  if (fire_cooldown_ > 0 || !IsAlive()) {
+  if (fire_cooldown > 0 || !IsAlive()) {
     return NULL;
   }
-  fire_cooldown_ += MAX_FIRE_COOLDOWN;
+  fire_cooldown += MAX_FIRE_COOLDOWN;
   b2Vec2 pos = turret->GetWorldVector(b2Vec2(WIDTH, 0));
   pos += turret->GetPosition();
   return new Bullet(
@@ -180,7 +193,7 @@ Bullet* Tank::Fire() {
 }
 
 unsigned int Tank::GetFireCooldown() const {
-  return fire_cooldown_;
+  return fire_cooldown;
 }
 
 void Tank::TakeDamage(unsigned int damage) {

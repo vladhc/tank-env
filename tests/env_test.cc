@@ -161,7 +161,7 @@ TEST(EnvTest, RandomplyPlacesTanksOnTheArena) {
   }
 }
 
-TEST(EnvTest, RestDoesntMakeTanksOverlap) {
+TEST(EnvTest, ResetDoesntMakeTanksOverlap) {
   // GIVEN
   Env env;
   const float arenaSize = env.GetArenaSize();

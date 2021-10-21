@@ -16,7 +16,7 @@ const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
 
 const int VELOCITY_ITERATIONS = 24;
 const int POSITION_ITERATIONS = 8;
-const int TANKS_COUNT = 10;
+const int TANKS_COUNT = 4;
 
 class BodyCheckerCallback : public b2QueryCallback {
   public:
@@ -157,8 +157,7 @@ std::vector<Observation> Env::Reset() {
       world_->QueryAABB(&bodyCheckerCallback, aabbQuery);
     } while(bodyCheckerCallback.FoundBodies());
 
-    tank->GetBody()->SetTransform(pos, angle);
-    tank->GetTurret()->SetTransform(pos, angle);
+    tank->SetTransform(pos, angle);
 
     const int id = tank->GetId();
     alivePrevStep[id] = true;
@@ -214,14 +213,21 @@ std::tuple<
   while (collisionProcessor->PollEvent(&c)) {
     if (c.bullet != NULL) {
       if (c.tank != NULL && c.tank->IsAlive()) {
-        DamageTank(c.tank->GetId(), 30);
-        const Tank* owner = (Tank*)c.bullet->GetOwner();
-        const int ownerId = owner->GetId();
-        if (owner->GetTeamId() == c.tank->GetTeamId()) {
+
+        // Inflict damage and punish the tank being hit
+        const auto beingHit = c.tank;
+        const auto beingHitId = beingHit->GetId();
+        DamageTank(beingHitId, 30);
+        perTankReward[beingHitId] -= 0.3f;
+
+        // Grant reward to attacker
+        const Tank* attacker = (Tank*)c.bullet->GetOwner();
+        const int attackerId = attacker->GetId();
+        if (attacker->GetTeamId() == beingHit->GetTeamId()) {
           // friendly fire
-          perTankReward[ownerId] -= 0.3f;
+          perTankReward[attackerId] -= 0.3f;
         } else {
-          perTankReward[ownerId] += 0.3f;
+          perTankReward[attackerId] += 0.3f;
         }
       }
       deleteBullet(c.bullet);
@@ -238,9 +244,9 @@ std::tuple<
   for (const Observation &ob : obs) {
     const Tank* tank = ob.tanks[ob.heroId];
     const int teamId = tank->GetTeamId();
-    if (strategicPoint->GetOwner() == tank) {
+    /*if (strategicPoint->GetOwner() == tank) {
       teamRewards[teamId] += 0.1f;
-    }
+    }*/
     if (!tank->IsAlive()) {
       teamRewards[teamId] -= 1.0f;
     }

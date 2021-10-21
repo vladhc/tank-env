@@ -7,11 +7,14 @@ class Tank : public GameObject {
   public:
     Tank(int id, int teamId, b2World* world);
     ~Tank();
+    void SetTransform(const b2Vec2& position, float bodyAngle);
+    void SetTransform(const b2Vec2& position, float bodyAngle, float turretAngle);
     float GetAngle() const;
     float GetAngularVelocity() const;
     b2Vec2 GetPosition() const;
     b2Vec2 GetLinearVelocity() const;
-    b2Vec2 GetLocalPoint(b2Vec2 globalPoint) const;
+    b2Vec2 GetLocalPoint(const b2Vec2& globalPoint) const;
+    b2Vec2 GetTurretLocalPoint(const b2Vec2& globalPoint) const;
     float GetSize() const;
     b2Body* GetBody();
     b2Body* GetTurret();
@@ -30,8 +33,8 @@ class Tank : public GameObject {
     int id;
     int teamId;
     unsigned int hitpoints;
-    unsigned int fire_cooldown_;
-    b2Body* body_;
+    unsigned int fire_cooldown;
+    b2Body* body;
     b2Body* turret;
     b2RevoluteJoint* joint;
 };
