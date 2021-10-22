@@ -147,7 +147,7 @@ PYBIND11_MODULE(tanks, m) {
                   throw std::runtime_error("Expected dimension[0] to be of size 4");
                 }
                 float* action = (float*)(actionArrInfo.ptr);
-                actions[item.first] = Action{action[0], action[1], action[2], action[3] > 0.5};
+                actions[item.first] = Action{action[0], action[1], action[2], action[3] > 0.};
               }
 
               std::tuple<
