@@ -8,16 +8,21 @@
 #include "geom.h"
 #include "renderer.h"
 
-const int MAX_BULLETS_COUNT = 4; // 1 bullet per tank
-
-// hero: 10 floats
-// 1 tank: 10 floats
-const int OBSERVATION_SIZE = 14 + 1 * 15 + MAX_BULLETS_COUNT * 3;
+const unsigned int FLOATS_PER_HERO = 14;
+const unsigned int FLOATS_PER_TANK = 15;
+const unsigned int FLOATS_PER_BULLET = 3;
+const unsigned int BULLETS_PER_TANK = 2;
 
 namespace py = pybind11;
 
-int writeBullets(const std::vector<const Bullet*> bullets, float* arr, float arena_size, unsigned int idx) {
-  int bulletsCount = 0;
+int writeBullets(
+    const std::vector<const Bullet*> bullets,
+    float* arr,
+    float arena_size,
+    unsigned int idx,
+    unsigned int maxBulletsCount
+) {
+  unsigned int bulletsCount = 0;
   for (auto bullet : bullets) {
     const auto x = bullet->GetPosition().x;
     if (x < -arena_size || x > arena_size) {
@@ -32,10 +37,10 @@ int writeBullets(const std::vector<const Bullet*> bullets, float* arr, float are
     arr[idx++] = normalizeAngle(bullet->GetAngle());
     bulletsCount++;
   }
-  while (bulletsCount < MAX_BULLETS_COUNT) {
-    arr[idx++] = 0.;
-    arr[idx++] = 0.;
-    arr[idx++] = 0.;
+  while (bulletsCount < maxBulletsCount) {
+    for (unsigned int i=0; i < FLOATS_PER_BULLET; i++) {
+      arr[idx++] = 0.;
+    }
     bulletsCount++;
   }
   return idx;
@@ -45,7 +50,6 @@ int write(const Tank* tank, const Tank* hero, float* arr, unsigned int idx) {
   arr[idx++] = tank->GetTeamId() == hero->GetTeamId();
   arr[idx++] = tank->GetHitpoints();
   arr[idx++] = tank->GetFireCooldown();
-
   arr[idx++] = tank->GetPosition().x - hero->GetPosition().x;
   arr[idx++] = tank->GetPosition().y - hero->GetPosition().y;
   arr[idx++] = normalizeAngle(tank->GetAngle());
@@ -66,7 +70,13 @@ int write(const Tank* tank, const Tank* hero, float* arr, unsigned int idx) {
 }
 
 py::array_t<float> encodeObservation(const Observation &obs) {
-    float *ret = new float[OBSERVATION_SIZE];
+    const auto tanksCount = obs.tanks.size();
+    const auto maxBulletsCount = tanksCount * BULLETS_PER_TANK;
+    const unsigned int observationSize = FLOATS_PER_HERO +
+      (tanksCount - 1) * FLOATS_PER_TANK +
+      maxBulletsCount * FLOATS_PER_BULLET;
+
+    float *ret = new float[observationSize];
     unsigned int idx = 0;
     // Arena
     ret[idx++] = obs.arenaSize;
@@ -75,7 +85,6 @@ py::array_t<float> encodeObservation(const Observation &obs) {
     const Tank* hero = obs.tanks[obs.heroId];
     ret[idx++] = hero->GetHitpoints();
     ret[idx++] = hero->GetFireCooldown();
-
     ret[idx++] = hero->GetPosition().x;
     ret[idx++] = hero->GetPosition().y;
     ret[idx++] = normalizeAngle(hero->GetAngle());
@@ -98,9 +107,9 @@ py::array_t<float> encodeObservation(const Observation &obs) {
     ret[idx++] = pos.Length();
     ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 
-    idx = writeBullets(obs.bullets, ret, obs.arenaSize, idx);
+    idx = writeBullets(obs.bullets, ret, obs.arenaSize, idx, maxBulletsCount);
 
-    return py::array_t<float>(OBSERVATION_SIZE, ret);
+    return py::array_t<float>(observationSize, ret);
 }
 
 PYBIND11_MODULE(tanks, m) {
@@ -111,7 +120,7 @@ PYBIND11_MODULE(tanks, m) {
               renderer.Render(env);
             });
     py::class_<Env>(m, "Env")
-        .def(py::init<>())
+        .def(py::init<unsigned int>())
         .def("reset",
             [](Env &env) {
               std::vector<Observation> obs = env.Reset();

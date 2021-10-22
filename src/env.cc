@@ -16,7 +16,6 @@ const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
 
 const int VELOCITY_ITERATIONS = 24;
 const int POSITION_ITERATIONS = 8;
-const int TANKS_COUNT = 2;
 
 class BodyCheckerCallback : public b2QueryCallback {
   public:
@@ -30,7 +29,7 @@ class BodyCheckerCallback : public b2QueryCallback {
     bool foundBodies;
 };
 
-Env::Env() {
+Env::Env(unsigned int tanksCount) {
   b2Vec2 gravity(0.0f, 0.0f);
   world_ = new b2World(gravity);
 
@@ -75,7 +74,7 @@ Env::Env() {
     ground->CreateFixture(&sd);
   }
 
-  for (unsigned int idx=0; idx < TANKS_COUNT; idx++) {
+  for (unsigned int idx=0; idx < tanksCount; idx++) {
     Tank* tank = new Tank(idx, idx % 2 == 0, world_);
     b2FrictionJointDef jd;
     jd.bodyA = ground;
@@ -147,9 +146,10 @@ std::vector<Observation> Env::Reset() {
     const float margin = tank->GetSize() + tank->GetSize() * 0.5;
 
     b2Vec2 pos;
+    b2AABB aabbQuery;
     do {
-      pos = b2Vec2{coord_gen(), coord_gen()};
-      b2AABB aabbQuery;
+      pos.x = coord_gen();
+      pos.y = coord_gen();
       aabbQuery.lowerBound = b2Vec2{pos.x - margin, pos.y - margin};
       aabbQuery.upperBound = b2Vec2{pos.x + margin, pos.y + margin};
 
@@ -207,7 +207,7 @@ std::tuple<
 
   // Process collisions
   std::map<int, float> perTankReward;
-  for (int idx=0; idx < TANKS_COUNT; idx++) {
+  for (unsigned int idx=0; idx < tanks.size(); idx++) {
     perTankReward[idx] = 0.0f;
   }
   while (collisionProcessor->PollEvent(&c)) {

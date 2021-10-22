@@ -5,7 +5,7 @@
 
 TEST(EnvTest, EpisodeCompleteWhenSecondTeamIsDead) {
   // GIVEN
-  Env env;
+  Env env{10};
   for (auto tank : env.GetTanks()) {
     if (tank->GetTeamId() == 1) {
       int hp = tank->GetHitpoints();
@@ -22,7 +22,7 @@ TEST(EnvTest, EpisodeCompleteWhenSecondTeamIsDead) {
 
 TEST(EnvTest, EpisodeNoCompleteWhenTeamsAlive) {
   // GIVEN
-  Env env;
+  Env env{10};
   // Kill 1 tank of each team
   // int teamIds[] = {0, 1};
   for (int teamId : {0, 1}) {
@@ -44,7 +44,7 @@ TEST(EnvTest, EpisodeNoCompleteWhenTeamsAlive) {
 
 TEST(EnvTest, DeadTankIsReturnedOnce) {
   // GIVEN
-  Env env;
+  Env env{10};
   // Kill 1 tank
   const int tankId = 0;
   for (auto tank : env.GetTanks()) {
@@ -82,7 +82,7 @@ TEST(EnvTest, DeadTankIsReturnedOnce) {
 
 TEST(EnvTest, DeadTankIsDoneAndPunished) {
   // GIVEN
-  Env env;
+  Env env{10};
   // Kill 1 tank of each team
   // int teamIds[] = {0, 1};
   int tankId = 0;
@@ -121,7 +121,7 @@ TEST(EnvTest, DeadTankIsDoneAndPunished) {
 
 TEST(EnvTest, ResetRemovesBullets) {
   // GIVEN
-  Env env;
+  Env env{10};
   std::map<int, Action> actions;
   for (auto tank : env.GetTanks()) {
     actions[tank->GetId()] = Action{0, 0, true};
@@ -137,7 +137,7 @@ TEST(EnvTest, ResetRemovesBullets) {
 
 TEST(EnvTest, RandomplyPlacesTanksOnTheArena) {
   // GIVEN
-  Env env;
+  Env env{10};
   auto tanks = env.GetTanks();
   env.Reset();
   std::vector<float> angles(tanks.size());
@@ -162,7 +162,7 @@ TEST(EnvTest, RandomplyPlacesTanksOnTheArena) {
 
 TEST(EnvTest, ResetDoesntMakeTanksOverlap) {
   // GIVEN
-  Env env;
+  Env env{10};
   const float arenaSize = env.GetArenaSize();
   auto tanks = env.GetTanks();
 
