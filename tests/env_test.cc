@@ -1,4 +1,7 @@
+#include <tuple>
+#include <vector>
 #include <iostream>
+#include <functional>
 #include <gtest/gtest.h>
 #include "tank.h"
 #include "env.h"

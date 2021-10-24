@@ -8,7 +8,7 @@
 int main() {
   Renderer r;
 
-  Env env = Env();
+  Env env{10};
   env.Reset();
   KeyboardController keyController;
 

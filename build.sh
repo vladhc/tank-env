@@ -5,6 +5,7 @@ set -e  # exit when any command fails
 BUILD_TESTBED=false
 BUILD_PYMODULE=false
 BUILD_TESTS=false
+BUILD_STRESS_TESTS=false
 
 while test $# -gt 0
 do
@@ -15,10 +16,13 @@ do
         ;;
     --tests) BUILD_TESTS=true
         ;;
+    --stress) BUILD_STRESS_TESTS=true
+        ;;
     --all)
         BUILD_TESTBED=true
         BUILD_PYMODULE=true
         BUILD_TESTS=true
+        # DO NOT BUILD stress tests
         ;;
     --*) echo "bad option $1"
         ;;
@@ -58,7 +62,28 @@ then
   rm -f $OUTPUT
   echo "Building and running tests"
   c++ $SRC_COMMON \
-    tests/*_test.cc \
+    tests/env_test.cc tests/geom_test.cc tests/tank_test.cc \
+    -g -rdynamic \
+    $INCLUDE_COMMON \
+    -Isrc \
+    -Iextern/googletest/googletest/include \
+    -std=c++11 -w \
+    -Llib \
+    -lbox2d \
+    -lgtest \
+    -pthread \
+    -o $OUTPUT
+  LD_LIBRARY_PATH="$(pwd)/lib:$LD_LIBRARY_PATH" $OUTPUT
+  echo "Done"
+fi
+
+if $BUILD_STRESS_TESTS
+then
+  OUTPUT="build/stress-test"
+  rm -f $OUTPUT
+  echo "Building and running stress tests"
+  c++ $SRC_COMMON \
+    tests/stress_test.cc \
     -g -rdynamic \
     $INCLUDE_COMMON \
     -Isrc \

@@ -130,26 +130,26 @@ std::vector<Observation> Env::Reset() {
     deleteBullet(bullets[0]);
   }
 
-  static std::mt19937 random_engine;
-  static auto angle_gen = std::bind(
+  static std::mt19937 randomEngine;
+  static auto angleGen = std::bind(
       std::uniform_real_distribution<float> {0, 2 * M_PI},
-      random_engine
+      randomEngine
   );
-  static auto coord_gen = std::bind(
+  static auto coordGen = std::bind(
       std::uniform_real_distribution<float> {-ARENA_SIZE, ARENA_SIZE},
-      random_engine
+      randomEngine
   );
   BodyCheckerCallback bodyCheckerCallback;
 
   for (Tank* tank : tanks) {
-    const float angle = angle_gen();
+    const float angle = angleGen();
     const float margin = tank->GetSize() + tank->GetSize() * 0.5;
 
     b2Vec2 pos;
     b2AABB aabbQuery;
     do {
-      pos.x = coord_gen();
-      pos.y = coord_gen();
+      pos.x = coordGen();
+      pos.y = coordGen();
       aabbQuery.lowerBound = b2Vec2{pos.x - margin, pos.y - margin};
       aabbQuery.upperBound = b2Vec2{pos.x + margin, pos.y + margin};
 
@@ -208,8 +208,13 @@ std::tuple<
   // Process collisions
   std::map<int, float> perTankReward;
   for (unsigned int idx=0; idx < tanks.size(); idx++) {
-    perTankReward[idx] = 0.0f;
+    // This will reward tanks to finish an episode earlier
+    perTankReward[idx] = -0.001f;
   }
+  // A bullet can hit multiple targets in one tick.
+  // That's why we separate steps "process a bullet hit"
+  // and "remove a bullet".
+  std::vector<Bullet*> bulletsToDelete;
   while (collisionProcessor->PollEvent(&c)) {
     if (c.bullet != NULL) {
       if (c.tank != NULL && c.tank->IsAlive()) {
@@ -225,16 +230,19 @@ std::tuple<
         const int attackerId = attacker->GetId();
         if (attacker->GetTeamId() == beingHit->GetTeamId()) {
           // friendly fire
-          perTankReward[attackerId] -= 0.3f;
+          perTankReward[attackerId] -= 1.f;
         } else {
-          perTankReward[attackerId] += 0.3f;
+          perTankReward[attackerId] += 1.f;
         }
       }
-      deleteBullet(c.bullet);
+      bulletsToDelete.push_back(c.bullet);
     }
     if (c.point != NULL) {
       c.point->SetOwner(c.tank);
     }
+  }
+  for (auto bullet : bulletsToDelete) {
+    deleteBullet(bullet);
   }
 
   std::vector<Observation> obs = CreateObservations();
@@ -289,6 +297,14 @@ void Env::DamageTank(int tankId, unsigned int damage) {
 std::vector<const Bullet*> Env::GetBullets() const {
   std::vector<const Bullet*> bulletsImmutable;
   for (const Bullet* bullet : bullets) {
+    const auto x = bullet->GetPosition().x;
+    if (x < -ARENA_SIZE || x > ARENA_SIZE) {
+      continue;
+    }
+    const auto y = bullet->GetPosition().y;
+    if (y < -ARENA_SIZE || y > ARENA_SIZE) {
+      continue;
+    }
     bulletsImmutable.push_back(bullet);
   }
   return bulletsImmutable;

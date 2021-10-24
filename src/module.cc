@@ -8,7 +8,7 @@
 #include "geom.h"
 #include "renderer.h"
 
-const unsigned int FLOATS_PER_HERO = 14;
+const unsigned int FLOATS_PER_HERO = 13;
 const unsigned int FLOATS_PER_TANK = 15;
 const unsigned int FLOATS_PER_BULLET = 3;
 const unsigned int BULLETS_PER_TANK = 2;
@@ -18,22 +18,14 @@ namespace py = pybind11;
 int writeBullets(
     const std::vector<const Bullet*> bullets,
     float* arr,
-    float arena_size,
     unsigned int idx,
     unsigned int maxBulletsCount
 ) {
   unsigned int bulletsCount = 0;
   for (auto bullet : bullets) {
-    const auto x = bullet->GetPosition().x;
-    if (x < -arena_size || x > arena_size) {
-      continue;
-    }
-    const auto y = bullet->GetPosition().y;
-    if (y < -arena_size || y > arena_size) {
-      continue;
-    }
-    arr[idx++] = x;
-    arr[idx++] = y;
+    const b2Vec2 pos = bullet->GetPosition();
+    arr[idx++] = pos.x;
+    arr[idx++] = pos.y;
     arr[idx++] = normalizeAngle(bullet->GetAngle());
     bulletsCount++;
   }
@@ -78,8 +70,6 @@ py::array_t<float> encodeObservation(const Observation &obs) {
 
     float *ret = new float[observationSize];
     unsigned int idx = 0;
-    // Arena
-    ret[idx++] = obs.arenaSize;
 
     // Tank
     const Tank* hero = obs.tanks[obs.heroId];
@@ -107,7 +97,7 @@ py::array_t<float> encodeObservation(const Observation &obs) {
     ret[idx++] = pos.Length();
     ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 
-    idx = writeBullets(obs.bullets, ret, obs.arenaSize, idx, maxBulletsCount);
+    idx = writeBullets(obs.bullets, ret, idx, maxBulletsCount);
 
     return py::array_t<float>(observationSize, ret);
 }
