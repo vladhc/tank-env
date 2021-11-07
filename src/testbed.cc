@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "keyboard_controller.h"
 #include <SDL2/SDL.h>
+#include "geom.h"
 
 int main() {
   Renderer r;
@@ -23,11 +24,19 @@ int main() {
     if (keyController.IsExit()) {
       break;
     }
-    auto pos = tank->GetPosition();
-    std::cout << "(" << pos.x << "," << pos.y << ") ";
+    // auto pos = tank->GetPosition();
+    // std::cout << "(" << pos.x << "," << pos.y << ") ";
     std::cout << "bodyAngle: " << (tank->GetAngle() / M_PI) << "; ";
-    std::cout << "turretAngle: " << (tank->GetTurretAngle() / M_PI) << "; ";
+    // std::cout << "turretAngle: " << (tank->GetTurretAngle() / M_PI) << "; ";
+    // std::cout << "angularVelocity: " << (tank->GetAngularVelocity()) << "; ";
+    // std::cout << "turretAngularVelocity: " << (tank->GetTurretAngularVelocity() - tank->GetAngularVelocity()) << "; ";
+
+    // b2Vec2 v = tank->GetLinearVelocity();
+
+    // b2Vec2 vLocal = tank->GetLocalPoint(v);
+    // std::cout << "v: " << v.Length() << "; ";
     std::cout << std::endl;
+
     SDL_Delay(TIME_STEP * 1000);
   }
 

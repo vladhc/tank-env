@@ -3,6 +3,9 @@
 #include "game_object.h"
 #include "bullet.h"
 
+const unsigned int MAX_FIRE_COOLDOWN = 30;
+const unsigned int MAX_HITPOINTS = 100;
+
 class Tank : public GameObject {
   public:
     Tank(int id, int teamId, b2World* world);
@@ -15,6 +18,7 @@ class Tank : public GameObject {
     b2Vec2 GetLinearVelocity() const;
     b2Vec2 GetLocalPoint(const b2Vec2& globalPoint) const;
     b2Vec2 GetTurretLocalPoint(const b2Vec2& globalPoint) const;
+    b2Vec2 GetWorldVector(const b2Vec2& localVector) const;
     float GetSize() const;
     b2Body* GetBody();
     b2Body* GetTurret();
@@ -26,7 +30,7 @@ class Tank : public GameObject {
     void TakeDamage(unsigned int damage);
     bool IsAlive() const;
     unsigned int GetHitpoints() const;
-    void ResetHitpoints();
+    void Reset();
     int GetId() const;
     int GetTeamId() const;
   private:

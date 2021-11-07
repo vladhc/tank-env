@@ -9,7 +9,7 @@ class Renderer {
     SDL_Window* window;
     SDL_Renderer* gRenderer;
     void DrawArena(float size);
-    void DrawStrategicPoint(const StrategicPoint& point);
+    // void DrawStrategicPoint(const StrategicPoint& point);
     void DrawBullet(const Bullet& bullet);
     void DrawTank(const Tank& tank);
 };

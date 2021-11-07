@@ -7,16 +7,16 @@
 #include "env.h"
 #include "geom.h"
 #include "renderer.h"
+#include "chunk.h"
 
-const unsigned int FLOATS_PER_HERO = 13;
-const unsigned int FLOATS_PER_TANK = 15;
-const unsigned int FLOATS_PER_BULLET = 3;
-const unsigned int BULLETS_PER_TANK = 2;
+const unsigned int FLOATS_PER_BULLET = 4;
+const unsigned int BULLETS_PER_TANK = 0; // 2
 
 namespace py = pybind11;
 
 int writeBullets(
     const std::vector<const Bullet*> bullets,
+    const Tank* hero,
     float* arr,
     unsigned int idx,
     unsigned int maxBulletsCount
@@ -24,9 +24,13 @@ int writeBullets(
   unsigned int bulletsCount = 0;
   for (auto bullet : bullets) {
     const b2Vec2 pos = bullet->GetPosition();
-    arr[idx++] = pos.x;
-    arr[idx++] = pos.y;
-    arr[idx++] = normalizeAngle(bullet->GetAngle());
+    const b2Vec2 heroPos = hero->GetPosition();
+    arr[idx++] = pos.x - heroPos.x;
+    arr[idx++] = pos.y - heroPos.y;
+
+    const b2Vec2 velocity = bullet->GetLinearVelocity();
+    arr[idx++] = velocity.x;
+    arr[idx++] = velocity.y;
     bulletsCount++;
   }
   while (bulletsCount < maxBulletsCount) {
@@ -38,66 +42,36 @@ int writeBullets(
   return idx;
 }
 
-int write(const Tank* tank, const Tank* hero, float* arr, unsigned int idx) {
-  arr[idx++] = tank->GetTeamId() == hero->GetTeamId();
-  arr[idx++] = tank->GetHitpoints();
-  arr[idx++] = tank->GetFireCooldown();
-  arr[idx++] = tank->GetPosition().x - hero->GetPosition().x;
-  arr[idx++] = tank->GetPosition().y - hero->GetPosition().y;
-  arr[idx++] = normalizeAngle(tank->GetAngle());
-  arr[idx++] = normalizeAngle(tank->GetTurretAngle());
-  arr[idx++] = tank->GetLinearVelocity().x;
-  arr[idx++] = tank->GetLinearVelocity().y;
-  arr[idx++] = tank->GetLinearVelocity().Length();
-  arr[idx++] = tank->GetAngularVelocity();
-  arr[idx++] = tank->GetTurretAngularVelocity();
-
-  // In hero coordinates
-  const b2Vec2 pos = hero->GetLocalPoint(tank->GetPosition());
-  arr[idx++] = pos.Length();
-  arr[idx++] = normalizeAngle(getAngle(pos), true);
-  const b2Vec2 posRelativeToTurret = hero->GetTurretLocalPoint(tank->GetPosition());
-  arr[idx++] = normalizeAngle(getAngle(posRelativeToTurret), true);
-  return idx;
-}
-
 py::array_t<float> encodeObservation(const Observation &obs) {
     const auto tanksCount = obs.tanks.size();
     const auto maxBulletsCount = tanksCount * BULLETS_PER_TANK;
-    const unsigned int observationSize = FLOATS_PER_HERO +
-      (tanksCount - 1) * FLOATS_PER_TANK +
+    const unsigned int observationSize = static_cast<unsigned int>(HeroChunk::Size) +
+      (tanksCount - 1) * static_cast<unsigned int>(TankChunk::Size) +
       maxBulletsCount * FLOATS_PER_BULLET;
 
     float *ret = new float[observationSize];
     unsigned int idx = 0;
 
-    // Tank
+    // Hero
     const Tank* hero = obs.tanks[obs.heroId];
-    ret[idx++] = hero->GetHitpoints();
-    ret[idx++] = hero->GetFireCooldown();
-    ret[idx++] = hero->GetPosition().x;
-    ret[idx++] = hero->GetPosition().y;
-    ret[idx++] = normalizeAngle(hero->GetAngle());
-    ret[idx++] = normalizeAngle(hero->GetTurretAngle());
-    ret[idx++] = hero->GetLinearVelocity().x;
-    ret[idx++] = hero->GetLinearVelocity().y;
-    ret[idx++] = hero->GetLinearVelocity().Length();
-    ret[idx++] = hero->GetAngularVelocity();
-    ret[idx++] = hero->GetTurretAngularVelocity();
+    writeHeroChunk(hero, ret + idx);
+    idx += static_cast<unsigned int>(HeroChunk::Size);
 
+    // Other tanks
     for (const Tank* tank : obs.tanks) {
       if (tank->GetId() == obs.heroId) {
         continue;
       }
-      idx = write(tank, hero, ret, idx);
+      writeTankChunk(tank, hero, ret + idx);
+      idx += static_cast<unsigned int>(TankChunk::Size);
     }
 
     // StrategicPoint
-    b2Vec2 pos = hero->GetLocalPoint(obs.strategicPoint->GetPosition());
-    ret[idx++] = pos.Length();
-    ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
+    // b2Vec2 pos = hero->GetLocalPoint(obs.strategicPoint->GetPosition());
+    // ret[idx++] = pos.Length();
+    // ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 
-    idx = writeBullets(obs.bullets, ret, idx, maxBulletsCount);
+    // idx = writeBullets(obs.bullets, hero, ret, idx, maxBulletsCount);
 
     return py::array_t<float>(observationSize, ret);
 }
@@ -109,8 +83,39 @@ PYBIND11_MODULE(tanks, m) {
             [](Renderer &renderer, Env &env) {
               renderer.Render(env);
             });
+    py::enum_<TankChunk>(m, "TankChunk")
+      .value("IS_ENEMY", TankChunk::IS_ENEMY)
+      .value("HITPOINTS", TankChunk::HITPOINTS)
+      .value("FIRE_COOLDOWN", TankChunk::FIRE_COOLDOWN)
+      .value("POSITION_DISTANCE", TankChunk::POSITION_DISTANCE)
+      .value("POSITION_ANGLE", TankChunk::POSITION_ANGLE)
+      .value("BODY_ANGLE", TankChunk::BODY_ANGLE)
+      .value("TURRET_ANGLE_RELATIVE_TO_BODY", TankChunk::TURRET_ANGLE_RELATIVE_TO_BODY)
+      .value("VELOCITY_LENGTH", TankChunk::VELOCITY_LENGTH)
+      .value("VELOCITY_ANGLE_RELATIVE_TO_BODY", TankChunk::VELOCITY_ANGLE_RELATIVE_TO_BODY)
+      .value("BODY_ANGULAR_VELOCITY", TankChunk::BODY_ANGULAR_VELOCITY)
+      .value("TURRET_ANGULAR_VELOCITY", TankChunk::TURRET_ANGULAR_VELOCITY)
+      .value("AIM_ANGLE", TankChunk::AIM_ANGLE)
+      .value("Size", TankChunk::Size);
+    py::enum_<HeroChunk>(m, "HeroChunk")
+      .value("HITPOINTS", HeroChunk::HITPOINTS)
+      .value("FIRE_COOLDOWN", HeroChunk::FIRE_COOLDOWN)
+      .value("POSITION_X", HeroChunk::POSITION_X)
+      .value("POSITION_Y", HeroChunk::POSITION_Y)
+      .value("BODY_ANGLE", HeroChunk::BODY_ANGLE)
+      .value("TURRET_ANGLE_RELATIVE_TO_BODY", HeroChunk::TURRET_ANGLE_RELATIVE_TO_BODY)
+      .value("VELOCITY_ANGLE_RELATIVE_TO_BODY", HeroChunk::VELOCITY_ANGLE_RELATIVE_TO_BODY)
+      .value("VELOCITY_LENGTH", HeroChunk::VELOCITY_LENGTH)
+      .value("BODY_ANGULAR_VELOCITY", HeroChunk::BODY_ANGULAR_VELOCITY)
+      .value("TURRET_ANGULAR_VELOCITY_RELATIVE_TO_BODY", HeroChunk::TURRET_ANGULAR_VELOCITY_RELATIVE_TO_BODY)
+      .value("Size", HeroChunk::Size);
     py::class_<Env>(m, "Env")
         .def(py::init<unsigned int>())
+        .def("damage_tank",
+            [](Env &env, int tankId, unsigned int damage) {
+              env.DamageTank(tankId, damage);
+            }
+        )
         .def("reset",
             [](Env &env) {
               std::vector<Observation> obs = env.Reset();

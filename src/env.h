@@ -15,7 +15,7 @@ struct Observation {
   const int heroId;
   const std::vector<const Tank*> tanks;
   const float arenaSize;
-  const StrategicPoint* strategicPoint;
+  // const StrategicPoint* strategicPoint;
   const std::vector<const Bullet*> bullets;
 };
 
@@ -31,7 +31,7 @@ class Env {
     > Step(const std::map<int, Action> actions);
     std::vector<const Tank*> GetTanks() const;
     void DamageTank(int tankId, unsigned int damage);
-    const StrategicPoint* GetStrategicPoint() const;
+    // const StrategicPoint* GetStrategicPoint() const;
     float GetArenaSize() const;
     std::vector<const Bullet*> GetBullets() const;
     bool EpisodeComplete() const;
@@ -40,7 +40,7 @@ class Env {
     std::vector<Tank*> tanks;
     std::vector<Bullet*> bullets;
     b2World* world_;
-    StrategicPoint* strategicPoint;
+    // StrategicPoint* strategicPoint;
     CollisionProcessor* collisionProcessor;
     void deleteBullet(Bullet* bullet);
     std::vector<char> alivePrevStep; // tankId -> wasAlivePreviousStep

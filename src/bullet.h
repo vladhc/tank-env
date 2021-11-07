@@ -7,7 +7,7 @@ class Bullet : public GameObject {
     Bullet(b2World* world, b2Vec2 firePosition, b2Vec2 fireDirection, GameObject* owner);
     ~Bullet();
     b2Vec2 GetPosition() const;
-    float GetAngle() const;
+    b2Vec2 GetLinearVelocity() const;
     GameObject* GetOwner();
   private:
     b2Body* body;

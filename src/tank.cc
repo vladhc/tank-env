@@ -6,16 +6,14 @@
 #include "game_object.h"
 #include "bullet.h"
 
-const float MAX_ANGULARY_VELOCITY = 1.0f;
-const float ANGLE_TORQUE = 50.0f;
+const float MAX_ANGULAR_VELOCITY = 1.2f;
+const float ANGLE_TORQUE = 1.0f;
 
-const float MAX_VELOCITY = 3.0f;
-const double ACCELERATION = 130.0f;
+const float MAX_VELOCITY = 6.0f;
+const double ACCELERATION = 10.0f;
 
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
-const unsigned int MAX_FIRE_COOLDOWN = 30;
-const unsigned int MAX_HITPOINTS = 100;
 const float WIDTH = 1.5f;
 const float HEIGHT = 0.75f;
 
@@ -92,6 +90,10 @@ b2Vec2 Tank::GetTurretLocalPoint(const b2Vec2& globalPoint) const {
   return turret->GetLocalPoint(globalPoint);
 }
 
+b2Vec2 Tank::GetWorldVector(const b2Vec2& localVector) const {
+  return body->GetWorldVector(localVector);
+}
+
 b2Vec2 Tank::GetLinearVelocity() const {
   return body->GetLinearVelocity();
 }
@@ -134,42 +136,48 @@ void Tank::Drive(float anglePower, float turretAnglePower, float power) {
   if (!IsAlive()) {
     return;
   }
-  // Turn if needed
-  float angularVelocity = body->GetAngularVelocity();
-  if (anglePower != 0.0f && abs(angularVelocity) < MAX_ANGULARY_VELOCITY) {
-    // Normalize anglePower
-    anglePower = min(anglePower, 1.0f);
-    anglePower = max(anglePower, -1.0f);
 
-    float torque = anglePower * ANGLE_TORQUE;
-    body->ApplyAngularImpulse(torque, true);
+  // Turn if needed
+  {
+    float angularVelocity = body->GetAngularVelocity();
+    if ((anglePower > 0 && angularVelocity < MAX_ANGULAR_VELOCITY) || (anglePower < 0 && angularVelocity > -MAX_ANGULAR_VELOCITY)) {
+      auto target = anglePower > 0 ? MAX_ANGULAR_VELOCITY : -MAX_ANGULAR_VELOCITY;
+      auto delta = (target - angularVelocity) * abs(anglePower);
+      delta = min(delta, 1.0f);
+      delta = max(delta, -1.0f);
+
+      float torque = ANGLE_TORQUE * delta;
+      body->ApplyAngularImpulse(torque, true);
+    }
   }
 
   // Turn turret
-  float turretVelocity = turret->GetAngularVelocity();
-  if (turretAnglePower == 0.0f) {
-    joint->SetMotorSpeed(0.0f);
-  } else if (std::abs(turretVelocity) < MAX_ANGULARY_VELOCITY) {
+  {
     turretAnglePower = min(turretAnglePower, 1.0f);
     turretAnglePower = max(turretAnglePower, -1.0f);
     joint->SetMotorSpeed(turretAnglePower);
   }
 
-  // accelerate if needed
-  b2Vec2 velocity = body->GetLinearVelocity();
-  if (power != 0 && velocity.Length() < MAX_VELOCITY) {
-    power = min(power, 1.0f);
-    power = max(power, -1.0f);
+  // Accelerate
+  {
+    b2Vec2 v = body->GetLinearVelocity();
+    b2Vec2 u = body->GetWorldVector(b2Vec2(1, 0));
+    auto current = v.x * u.x + v.y * u.y;
+    if ((power > 0 && current < MAX_VELOCITY) || (power < 0 && current > -MAX_VELOCITY)) {
+      auto target = power > 0 ? MAX_VELOCITY : -MAX_VELOCITY;
+      auto delta = (target - current) * abs(power);
+      delta = min(delta, 1.0f);
+      delta = max(delta, -1.0f);
 
-    float acceleration = ACCELERATION * power;
-    b2Vec2 frontVec = body->GetWorldVector(b2Vec2(1, 0));
-    body->ApplyLinearImpulseToCenter(
-        b2Vec2(
-          frontVec.x * acceleration,
-          frontVec.y * acceleration
-        ),
-        true
-    );
+      float acceleration = ACCELERATION * delta;
+      body->ApplyLinearImpulseToCenter(
+          b2Vec2(
+            u.x * acceleration,
+            u.y * acceleration
+          ),
+          true
+      );
+    }
   }
 
   if (fire_cooldown > 0) {
@@ -197,7 +205,10 @@ unsigned int Tank::GetFireCooldown() const {
 }
 
 void Tank::TakeDamage(unsigned int damage) {
-  hitpoints = max(0, hitpoints - damage);
+  if (damage > hitpoints) {
+    damage = hitpoints;
+  }
+  hitpoints -= damage;
 }
 
 bool Tank::IsAlive() const {
@@ -208,8 +219,13 @@ unsigned int Tank::GetHitpoints() const {
   return hitpoints;
 }
 
-void Tank::ResetHitpoints() {
+void Tank::Reset() {
   hitpoints = MAX_HITPOINTS;
+  fire_cooldown = 0;
+  Drive(0.0f, 0.0f, 0.0f);
+  body->SetLinearVelocity(b2Vec2{0, 0});
+  body->SetAngularVelocity(0);
+  turret->SetAngularVelocity(0);
 }
 
 int Tank::GetId() const {

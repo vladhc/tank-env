@@ -9,10 +9,11 @@ TEST(TankTest, DamagedMoreThanHitpoints) {
   auto hp = tank.GetHitpoints();
 
   // WHEN
-  tank.TakeDamage(hp * 2);
+  tank.TakeDamage(hp * 100);
 
   // THEN
-  ASSERT_TRUE(tank.GetHitpoints() == 0);
+  ASSERT_EQ(tank.GetHitpoints(), 0);
+  ASSERT_FALSE(tank.IsAlive());
 }
 
 TEST(TankTest, TakeSmallAmountOfDamage) {

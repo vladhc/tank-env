@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "env.h"
 #include "point.h"
-#include "strategic_point.h"
+// #include "strategic_point.h"
 #include "bullet.h"
 #include "renderer.h"
 
@@ -87,7 +87,7 @@ void Renderer::DrawArena(float size) {
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
 }
 
-void Renderer::DrawStrategicPoint(const StrategicPoint& point) {
+/*void Renderer::DrawStrategicPoint(const StrategicPoint& point) {
   b2Vec2 pos = point.GetPosition();
   SDL_SetRenderDrawColor(gRenderer, 0x72, 0x72, 0x18, 0x80);
   SDL_Rect rect{
@@ -98,7 +98,7 @@ void Renderer::DrawStrategicPoint(const StrategicPoint& point) {
   };
 
   SDL_RenderFillRect(gRenderer, &rect);
-}
+}*/
 
 void Renderer::DrawBullet(const Bullet& bullet) {
   b2Vec2 pos = bullet.GetPosition();
@@ -135,7 +135,11 @@ void Renderer::DrawTank(const Tank& tank) {
   if (!tank.IsAlive()) {
     alpha = 0x88;
   }
-  SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, alpha);
+  if (tank.GetTeamId() == 0) {
+    SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, alpha);
+  } else {
+    SDL_SetRenderDrawColor(gRenderer, 0x11, 0xEC, 0x11, alpha);
+  }
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
 
   // Light lines (turret top)
@@ -168,6 +172,6 @@ void Renderer::Render(const Env &env) {
     DrawBullet(*bullet);
   }
 
-  DrawStrategicPoint(*env.GetStrategicPoint());
+  // DrawStrategicPoint(*env.GetStrategicPoint());
   SDL_RenderPresent(gRenderer);
 }

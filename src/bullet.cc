@@ -36,8 +36,8 @@ b2Vec2 Bullet::GetPosition() const {
   return body->GetPosition();
 }
 
-float Bullet::GetAngle() const {
-  return body->GetAngle();
+b2Vec2 Bullet::GetLinearVelocity() const {
+  return body->GetLinearVelocity();
 }
 
 GameObject* Bullet::GetOwner() {

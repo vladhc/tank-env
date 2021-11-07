@@ -63,6 +63,7 @@ then
   echo "Building and running tests"
   c++ $SRC_COMMON \
     tests/env_test.cc tests/geom_test.cc tests/tank_test.cc \
+    src/chunk.cc tests/chunk_test.cc \
     -g -rdynamic \
     $INCLUDE_COMMON \
     -Isrc \
@@ -106,7 +107,7 @@ then
   c++ \
     $SRC_COMMON \
     src/renderer.cc \
-    src/module.cc \
+    src/module.cc src/chunk.cc \
     -O3 -Wall -shared -std=c++11 \
     -fPIC \
     $(python-config --includes) \

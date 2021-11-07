@@ -194,3 +194,31 @@ TEST(EnvTest, ResetDoesntMakeTanksOverlap) {
     }
   }
 }
+
+TEST(EnvTest, ResetStopsTank) {
+  // GIVEN
+  Env env{2};
+  env.Reset();
+  auto tank = env.GetTanks()[0];
+
+  std::map<int, Action> actions;
+  for (auto tank : env.GetTanks()) {
+    actions[tank->GetId()] = Action{0, 0, 0, false};
+  }
+  actions[tank->GetId()] = Action{1, 1, 1, false};
+
+  for (int i=0; i < 10; i++) {
+    env.Step(actions);
+  }
+  ASSERT_TRUE(tank->GetTurretAngularVelocity() > 0.5);
+  ASSERT_TRUE(tank->GetAngularVelocity() > 0.5);
+  ASSERT_TRUE(tank->GetLinearVelocity().Length() > 0.5);
+
+  // WHEN
+  env.Reset();
+
+  // THEN
+  ASSERT_FLOAT_EQ(tank->GetTurretAngularVelocity(), 0);
+  ASSERT_FLOAT_EQ(tank->GetAngularVelocity(), 0);
+  ASSERT_FLOAT_EQ(tank->GetLinearVelocity().Length(), 0);
+}

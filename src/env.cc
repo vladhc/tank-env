@@ -4,6 +4,7 @@
 #include <random>
 #include <functional>
 #include <stdlib.h>
+#include <unistd.h>
 #include "box2d/box2d.h"
 #include "tank.h"
 #include "env.h"
@@ -16,6 +17,7 @@ const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
 
 const int VELOCITY_ITERATIONS = 24;
 const int POSITION_ITERATIONS = 8;
+const unsigned int BULLET_DAMAGE = 40;
 
 class BodyCheckerCallback : public b2QueryCallback {
   public:
@@ -82,15 +84,15 @@ Env::Env(unsigned int tanksCount) {
     jd.localAnchorA.SetZero();
     jd.localAnchorB = tank->GetBody()->GetLocalCenter();
     jd.collideConnected = true;
-    jd.maxForce = 1500.0f;
-    jd.maxTorque = 700.0f;
+    jd.maxForce = 100.0f;
+    jd.maxTorque = 5.0f;
 
     world_->CreateJoint(&jd);
     tanks.push_back(tank);
     alivePrevStep.push_back(true);
   }
 
-  strategicPoint = new StrategicPoint(world_, b2Vec2(0.0f, 0.0f));
+  // strategicPoint = new StrategicPoint(world_, b2Vec2(0.0f, 0.0f));
 
   collisionProcessor = new CollisionProcessor(world_);
 }
@@ -102,7 +104,7 @@ Env::~Env() {
   for (Bullet* bullet : bullets) {
     delete bullet;
   }
-  delete strategicPoint;
+  // delete strategicPoint;
   delete collisionProcessor;
   delete world_;
 }
@@ -118,7 +120,7 @@ std::vector<Observation> Env::CreateObservations() const {
       heroId,
       GetTanks(),
       ARENA_SIZE,
-      strategicPoint,
+      // strategicPoint,
       GetBullets(),
     });
   }
@@ -130,7 +132,7 @@ std::vector<Observation> Env::Reset() {
     deleteBullet(bullets[0]);
   }
 
-  static std::mt19937 randomEngine;
+  static std::mt19937 randomEngine(getpid());
   static auto angleGen = std::bind(
       std::uniform_real_distribution<float> {0, 2 * M_PI},
       randomEngine
@@ -161,10 +163,10 @@ std::vector<Observation> Env::Reset() {
 
     const int id = tank->GetId();
     alivePrevStep[id] = true;
-    tank->ResetHitpoints();
+    tank->Reset();
   }
 
-  strategicPoint->SetOwner(NULL);
+  // strategicPoint->SetOwner(NULL);
 
   return CreateObservations();
 }
@@ -222,17 +224,18 @@ std::tuple<
         // Inflict damage and punish the tank being hit
         const auto beingHit = c.tank;
         const auto beingHitId = beingHit->GetId();
-        DamageTank(beingHitId, 30);
-        perTankReward[beingHitId] -= 0.3f;
+        DamageTank(beingHitId, BULLET_DAMAGE);
 
-        // Grant reward to attacker
-        const Tank* attacker = (Tank*)c.bullet->GetOwner();
-        const int attackerId = attacker->GetId();
-        if (attacker->GetTeamId() == beingHit->GetTeamId()) {
-          // friendly fire
-          perTankReward[attackerId] -= 1.f;
-        } else {
-          perTankReward[attackerId] += 1.f;
+        if (!beingHit->IsAlive()) {
+          // Grant reward to attacker
+          const Tank* attacker = (Tank*)c.bullet->GetOwner();
+          const int attackerId = attacker->GetId();
+          if (attacker->GetTeamId() == beingHit->GetTeamId()) {
+            // friendly fire
+            perTankReward[attackerId] -= 1.f;
+          } else {
+            perTankReward[attackerId] += 1.f;
+          }
         }
       }
       bulletsToDelete.push_back(c.bullet);
@@ -310,9 +313,9 @@ std::vector<const Bullet*> Env::GetBullets() const {
   return bulletsImmutable;
 }
 
-const StrategicPoint* Env::GetStrategicPoint() const {
+/*const StrategicPoint* Env::GetStrategicPoint() const {
   return strategicPoint;
-}
+}*/
 
 float Env::GetArenaSize() const {
   return ARENA_SIZE;
