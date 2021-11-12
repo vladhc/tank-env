@@ -31,6 +31,7 @@ class Env {
     > Step(const std::map<int, Action> actions);
     std::vector<const Tank*> GetTanks() const;
     void DamageTank(int tankId, unsigned int damage);
+    void SetTransform(int tankId, const b2Vec2& pos, float bodyAngle, float turretAngle);
     // const StrategicPoint* GetStrategicPoint() const;
     float GetArenaSize() const;
     std::vector<const Bullet*> GetBullets() const;

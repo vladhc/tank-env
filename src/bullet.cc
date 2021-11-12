@@ -21,6 +21,8 @@ Bullet::Bullet(b2World* world, b2Vec2 firePosition, b2Vec2 fireDirection, GameOb
   b2FixtureDef fixtureDef;
   fixtureDef.shape = &shape;
   fixtureDef.density = 1.0f;
+  fixtureDef.filter.categoryBits = 0x0002;
+  fixtureDef.filter.maskBits = 0x0001;
 
   body->CreateFixture(&fixtureDef);
   body->ApplyLinearImpulseToCenter(fireDirection, true);

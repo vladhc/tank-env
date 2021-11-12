@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "box2d/box2d.h"
 #include "tank.h"
+#include "bullet.h"
 #include "env.h"
 #include "action.h"
 #include "geom.h"
@@ -17,7 +18,6 @@ const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
 
 const int VELOCITY_ITERATIONS = 24;
 const int POSITION_ITERATIONS = 8;
-const unsigned int BULLET_DAMAGE = 40;
 
 class BodyCheckerCallback : public b2QueryCallback {
   public:
@@ -49,6 +49,8 @@ Env::Env(unsigned int tanksCount) {
     b2FixtureDef sd;
     sd.shape = &shape;
     sd.density = 0.0f;
+    sd.filter.categoryBits = 0x0004;
+    sd.filter.maskBits = 0x0001;
     sd.restitution = k_restitution;
 
     // Left vertical
@@ -295,6 +297,11 @@ std::vector<const Tank*> Env::GetTanks() const {
 void Env::DamageTank(int tankId, unsigned int damage) {
   auto tank = tanks[tankId];
   tank->TakeDamage(damage);
+}
+
+void Env::SetTransform(int tankId, const b2Vec2& pos, float bodyAngle, float turretAngle) {
+  auto tank = tanks[tankId];
+  tank->SetTransform(pos, bodyAngle, turretAngle);
 }
 
 std::vector<const Bullet*> Env::GetBullets() const {

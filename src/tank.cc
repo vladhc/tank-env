@@ -33,7 +33,13 @@ Tank::Tank(int id, int teamId, b2World* world) :
 
   b2PolygonShape tankShape;
   tankShape.SetAsBox(WIDTH, HEIGHT);
-  body->CreateFixture(&tankShape, 1.0f);
+
+  b2FixtureDef fixtureDef;
+  fixtureDef.shape = &tankShape;
+  fixtureDef.density = 1.0f;
+  fixtureDef.filter.categoryBits = 0x0001;
+  fixtureDef.filter.maskBits = 0x0001 | 0x0002 | 0x0004;
+  body->CreateFixture(&fixtureDef);
 
   // Turret
   b2BodyDef turretDef;
@@ -44,7 +50,8 @@ Tank::Tank(int id, int teamId, b2World* world) :
 
   b2PolygonShape turretShape;
   turretShape.SetAsBox(WIDTH * 0.6, HEIGHT * 0.6);
-  turret->CreateFixture(&turretShape, 1.0f);
+  fixtureDef.shape = &turretShape;
+  turret->CreateFixture(&fixtureDef);
 
   // Joint
   b2RevoluteJointDef jointDef;

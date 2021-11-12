@@ -4,6 +4,7 @@
 #include <functional>
 #include <gtest/gtest.h>
 #include "tank.h"
+#include "bullet.h"
 #include "env.h"
 
 TEST(EnvTest, EpisodeCompleteWhenSecondTeamIsDead) {
@@ -27,7 +28,6 @@ TEST(EnvTest, EpisodeNoCompleteWhenTeamsAlive) {
   // GIVEN
   Env env{10};
   // Kill 1 tank of each team
-  // int teamIds[] = {0, 1};
   for (int teamId : {0, 1}) {
     for (auto tank : env.GetTanks()) {
       if (tank->GetTeamId() == teamId) {
@@ -87,7 +87,6 @@ TEST(EnvTest, DeadTankIsDoneAndPunished) {
   // GIVEN
   Env env{10};
   // Kill 1 tank of each team
-  // int teamIds[] = {0, 1};
   int tankId = 0;
   for (auto tank : env.GetTanks()) {
     if (tank->GetId() == tankId) {
@@ -221,4 +220,34 @@ TEST(EnvTest, ResetStopsTank) {
   ASSERT_FLOAT_EQ(tank->GetTurretAngularVelocity(), 0);
   ASSERT_FLOAT_EQ(tank->GetAngularVelocity(), 0);
   ASSERT_FLOAT_EQ(tank->GetLinearVelocity().Length(), 0);
+}
+
+TEST(EnvTest, TwoBulletsCollidingDisappear) {
+  // GIVEN
+  Env env{2};
+  env.Reset();
+  env.SetTransform(0, b2Vec2{-10., 0}, 0, 0);
+  env.SetTransform(1, b2Vec2{10., 0}, -M_PI, -M_PI);
+
+  std::map<int, Action> actions;
+  actions[0] = Action{0, 0, 0, true};
+  actions[1] = Action{0, 0, 0, true};
+
+  // WHEN
+  env.Step(actions);
+
+  actions[0] = Action{0, 0, 0, false};
+  actions[1] = Action{0, 0, 0, false};
+  for (int i=0; i < 10; i++) {
+    env.Step(actions);
+  }
+
+  // THEN
+  auto step = env.Step(actions);
+  std::vector<Observation> obs = std::get<0>(step);
+  ASSERT_EQ(obs[0].bullets.size(), 0);
+
+  auto tanks = env.GetTanks();
+  ASSERT_EQ(tanks[0]->GetHitpoints(), MAX_HITPOINTS - BULLET_DAMAGE);
+  ASSERT_EQ(tanks[1]->GetHitpoints(), MAX_HITPOINTS - BULLET_DAMAGE);
 }

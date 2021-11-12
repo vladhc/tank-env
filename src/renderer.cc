@@ -9,8 +9,8 @@
 #include "renderer.h"
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 600;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 800;
 
 const float SCALE = 15.0f;
 const int OFFSET_X = SCREEN_WIDTH / 2;

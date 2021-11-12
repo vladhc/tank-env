@@ -26,7 +26,7 @@ int main() {
     }
     // auto pos = tank->GetPosition();
     // std::cout << "(" << pos.x << "," << pos.y << ") ";
-    std::cout << "bodyAngle: " << (tank->GetAngle() / M_PI) << "; ";
+    // std::cout << "bodyAngle: " << (tank->GetAngle() / M_PI) << "; ";
     // std::cout << "turretAngle: " << (tank->GetTurretAngle() / M_PI) << "; ";
     // std::cout << "angularVelocity: " << (tank->GetAngularVelocity()) << "; ";
     // std::cout << "turretAngularVelocity: " << (tank->GetTurretAngularVelocity() - tank->GetAngularVelocity()) << "; ";

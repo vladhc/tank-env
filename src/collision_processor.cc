@@ -73,6 +73,11 @@ void CollisionProcessor::EndContact(b2Contact* contact) {
 }
 
 bool CollisionProcessor::ShouldCollide (b2Fixture *fixtureA, b2Fixture *fixtureB) {
+  auto filterA = fixtureA->GetFilterData();
+  auto filterB = fixtureB->GetFilterData();
+  if ((filterA.maskBits & filterB.categoryBits) == 0 || (filterA.categoryBits & filterB.maskBits) == 0) {
+    return false;
+  }
   TypedContact c = ToTypedContact(fixtureA, fixtureB);
   if (c.bullet != NULL && c.tank != NULL && c.bullet->GetOwner() == c.tank) {
     return false;
