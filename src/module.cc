@@ -9,9 +9,6 @@
 #include "renderer.h"
 #include "chunk.h"
 
-const unsigned int FLOATS_PER_BULLET = 4;
-const unsigned int BULLETS_PER_TANK = 0; // 2
-
 namespace py = pybind11;
 
 int writeBullets(
@@ -33,37 +30,29 @@ int writeBullets(
     arr[idx++] = velocity.y;
     bulletsCount++;
   }
-  while (bulletsCount < maxBulletsCount) {
-    for (unsigned int i=0; i < FLOATS_PER_BULLET; i++) {
-      arr[idx++] = 0.;
-    }
-    bulletsCount++;
-  }
   return idx;
 }
 
-py::array_t<float> encodeObservation(const Observation &obs) {
-    const auto tanksCount = obs.tanks.size();
-    const auto maxBulletsCount = tanksCount * BULLETS_PER_TANK;
-    const unsigned int observationSize = static_cast<unsigned int>(HeroChunk::Size) +
-      (tanksCount - 1) * static_cast<unsigned int>(TankChunk::Size) +
-      maxBulletsCount * FLOATS_PER_BULLET;
-
-    float *ret = new float[observationSize];
-    unsigned int idx = 0;
-
+py::dict encodeObservation(const Observation &obs) {
     // Hero
     const Tank* hero = obs.tanks[obs.heroId];
-    writeHeroChunk(hero, ret + idx);
-    idx += static_cast<unsigned int>(HeroChunk::Size);
+    unsigned int heroChunkSize = static_cast<unsigned int>(HeroChunk::Size);
+    float* heroArr = new float[heroChunkSize];
+    writeHeroChunk(hero, heroArr);
+    py::array_t<float> heroObs{heroChunkSize, heroArr};
 
     // Other tanks
+    py::list tanksObs{obs.tanks.size() - 1};
+    unsigned idx = 0;
+    unsigned int tankChunkSize = static_cast<unsigned int>(TankChunk::Size);
     for (const Tank* tank : obs.tanks) {
       if (tank->GetId() == obs.heroId) {
         continue;
       }
-      writeTankChunk(tank, hero, ret + idx);
-      idx += static_cast<unsigned int>(TankChunk::Size);
+      float* tankArr = new float[tankChunkSize];
+      writeTankChunk(tank, hero, tankArr);
+      tanksObs[idx] = py::array_t<float>(tankChunkSize, tankArr);
+      idx++;
     }
 
     // StrategicPoint
@@ -71,9 +60,23 @@ py::array_t<float> encodeObservation(const Observation &obs) {
     // ret[idx++] = pos.Length();
     // ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
 
-    // idx = writeBullets(obs.bullets, hero, ret, idx, maxBulletsCount);
+    unsigned int bulletChunkSize = static_cast<unsigned int>(BulletChunk::Size);
+    py::list bulletsObs{obs.bullets.size()};
+    for (unsigned int i=0; i < obs.bullets.size(); i++) {
+      const Bullet* bullet = obs.bullets[i];
+      float* bulletArr = new float[bulletChunkSize];
+      writeBulletChunk(bullet, hero, bulletArr);
+      bulletsObs[i] = py::array_t<float>(bulletChunkSize, bulletArr);
+    }
 
-    return py::array_t<float>(observationSize, ret);
+    using namespace pybind11::literals; // to bring in the `_a` literal
+    py::dict obsMap(
+        "hero"_a=heroObs,
+        "tanks"_a=tanksObs,
+        "bullets"_a=bulletsObs
+    );
+
+    return obsMap;
 }
 
 PYBIND11_MODULE(tanks, m) {
@@ -109,6 +112,12 @@ PYBIND11_MODULE(tanks, m) {
       .value("BODY_ANGULAR_VELOCITY", HeroChunk::BODY_ANGULAR_VELOCITY)
       .value("TURRET_ANGULAR_VELOCITY_RELATIVE_TO_BODY", HeroChunk::TURRET_ANGULAR_VELOCITY_RELATIVE_TO_BODY)
       .value("Size", HeroChunk::Size);
+    py::enum_<BulletChunk>(m, "BulletChunk")
+      .value("POSITION_X", BulletChunk::POSITION_X)
+      .value("POSITION_Y", BulletChunk::POSITION_Y)
+      .value("VELOCITY_X", BulletChunk::VELOCITY_X)
+      .value("VELOCITY_Y", BulletChunk::VELOCITY_Y)
+      .value("Size", BulletChunk::Size);
     py::class_<Env>(m, "Env")
         .def(py::init<unsigned int>())
         .def("damage_tank",

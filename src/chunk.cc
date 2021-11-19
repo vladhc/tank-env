@@ -96,3 +96,24 @@ void writeHeroChunk(const Tank* hero, float* arr) {
       HeroChunk::TURRET_ANGULAR_VELOCITY_RELATIVE_TO_BODY,
       hero->GetTurretAngularVelocity() - bodyAngularV);
 }
+
+void writeBulletProp(float* arr, BulletChunk prop, float value) {
+  arr[static_cast<unsigned int>(prop)] = value;
+}
+
+void writeBulletChunk(const Bullet* bullet, const Tank* hero, float* arr) {
+  auto write = std::bind(
+      writeBulletProp,
+      arr,
+      std::placeholders::_1,
+      std::placeholders::_2);
+
+  const b2Vec2 pos = bullet->GetPosition();
+  const b2Vec2 heroPos = hero->GetPosition();
+  write(BulletChunk::POSITION_X, pos.x - heroPos.x);
+  write(BulletChunk::POSITION_Y, pos.y - heroPos.y);
+
+  const b2Vec2 velocity = bullet->GetLinearVelocity();
+  write(BulletChunk::VELOCITY_X, velocity.x);
+  write(BulletChunk::VELOCITY_Y, velocity.y);
+}
