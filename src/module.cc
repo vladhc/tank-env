@@ -11,28 +11,6 @@
 
 namespace py = pybind11;
 
-int writeBullets(
-    const std::vector<const Bullet*> bullets,
-    const Tank* hero,
-    float* arr,
-    unsigned int idx,
-    unsigned int maxBulletsCount
-) {
-  unsigned int bulletsCount = 0;
-  for (auto bullet : bullets) {
-    const b2Vec2 pos = bullet->GetPosition();
-    const b2Vec2 heroPos = hero->GetPosition();
-    arr[idx++] = pos.x - heroPos.x;
-    arr[idx++] = pos.y - heroPos.y;
-
-    const b2Vec2 velocity = bullet->GetLinearVelocity();
-    arr[idx++] = velocity.x;
-    arr[idx++] = velocity.y;
-    bulletsCount++;
-  }
-  return idx;
-}
-
 py::dict encodeObservation(const Observation &obs) {
     // Hero
     const Tank* hero = obs.tanks[obs.heroId];
