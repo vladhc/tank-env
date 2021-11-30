@@ -15,6 +15,7 @@ void writeTankChunk(const Tank* tank, const Tank* hero, float* arr) {
   write(TankChunk::IS_ENEMY, tank->GetTeamId() != hero->GetTeamId());
 
   write(TankChunk::HITPOINTS, tank->GetHitpoints());
+  write(TankChunk::IS_ALIVE, tank->IsAlive());
   write(TankChunk::FIRE_COOLDOWN, tank->GetFireCooldown());
 
   const b2Vec2 pos = tank->GetPosition();

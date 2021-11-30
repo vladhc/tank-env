@@ -4,6 +4,7 @@
 enum struct TankChunk {
   IS_ENEMY,
   HITPOINTS,
+  IS_ALIVE,
   FIRE_COOLDOWN,
   POSITION_DISTANCE,
   POSITION_ANGLE,
