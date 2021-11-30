@@ -67,6 +67,7 @@ PYBIND11_MODULE(tanks, m) {
     py::enum_<TankChunk>(m, "TankChunk")
       .value("IS_ENEMY", TankChunk::IS_ENEMY)
       .value("HITPOINTS", TankChunk::HITPOINTS)
+      .value("IS_ALIVE", TankChunk::IS_ALIVE)
       .value("FIRE_COOLDOWN", TankChunk::FIRE_COOLDOWN)
       .value("POSITION_DISTANCE", TankChunk::POSITION_DISTANCE)
       .value("POSITION_ANGLE", TankChunk::POSITION_ANGLE)
