@@ -218,6 +218,7 @@ void Tank::TakeDamage(unsigned int damage) {
   hitpoints -= damage;
   if (!IsAlive()) {
     joint->SetMotorSpeed(0);
+    fire_cooldown = MAX_FIRE_COOLDOWN;
   }
 }
 

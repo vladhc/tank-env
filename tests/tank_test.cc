@@ -79,3 +79,15 @@ TEST(TankTest, GetLocalPoint) {
   EXPECT_TRUE(pt.x > 0);
   EXPECT_TRUE(pt.y < 0);
 }
+
+TEST(TankTest, DeadTankHasMaxFireCooldown) {
+  // GIVEN
+  const auto world = new b2World(b2Vec2{});
+  Tank tank = Tank(0, 0, world);
+
+  // WHEN
+  tank.TakeDamage(tank.GetHitpoints());
+
+  // THEN
+  EXPECT_EQ(tank.GetFireCooldown(), MAX_FIRE_COOLDOWN);
+}
