@@ -216,6 +216,9 @@ void Tank::TakeDamage(unsigned int damage) {
     damage = hitpoints;
   }
   hitpoints -= damage;
+  if (!IsAlive()) {
+    joint->SetMotorSpeed(0);
+  }
 }
 
 bool Tank::IsAlive() const {

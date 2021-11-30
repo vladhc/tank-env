@@ -251,3 +251,36 @@ TEST(EnvTest, TwoBulletsCollidingDisappear) {
   ASSERT_EQ(tanks[0]->GetHitpoints(), MAX_HITPOINTS - BULLET_DAMAGE);
   ASSERT_EQ(tanks[1]->GetHitpoints(), MAX_HITPOINTS - BULLET_DAMAGE);
 }
+
+TEST(EnvTest, DeadTankDoesntMove) {
+  // GIVEN
+  Env env{3};
+  env.Reset();
+  env.SetTransform(0, b2Vec2{-10., 0}, 0, 0);
+  env.SetTransform(1, b2Vec2{10., 0}, -M_PI, -M_PI);
+
+  std::map<int, Action> actions;
+  actions[0] = Action{0, 1, 0, false};
+  actions[1] = Action{0, 0, 1, false};
+  actions[2] = Action{0, 1, 1, false};
+
+  for (int i=0; i < 10; i++) {
+    env.Step(actions);
+  }
+  auto tanks = env.GetTanks();
+
+  // WHEN
+  for (auto tank : tanks) {
+    env.DamageTank(tank->GetId(), tank->GetHitpoints());
+  }
+  for (int i=0; i < 100; i++) {
+    env.Step(actions);
+  }
+
+  // THEN
+  for (auto tank : tanks) {
+    ASSERT_FALSE(tank->IsAlive());
+    ASSERT_FLOAT_EQ(tank->GetAngularVelocity(), 0);
+    ASSERT_FLOAT_EQ(tank->GetTurretAngularVelocity(), 0);
+  }
+}
