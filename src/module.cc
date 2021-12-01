@@ -71,6 +71,8 @@ PYBIND11_MODULE(tanks, m) {
       .value("FIRE_COOLDOWN", TankChunk::FIRE_COOLDOWN)
       .value("POSITION_DISTANCE", TankChunk::POSITION_DISTANCE)
       .value("POSITION_ANGLE", TankChunk::POSITION_ANGLE)
+      .value("POSITION_X", TankChunk::POSITION_X)
+      .value("POSITION_Y", TankChunk::POSITION_Y)
       .value("BODY_ANGLE", TankChunk::BODY_ANGLE)
       .value("TURRET_ANGLE_RELATIVE_TO_BODY", TankChunk::TURRET_ANGLE_RELATIVE_TO_BODY)
       .value("VELOCITY_LENGTH", TankChunk::VELOCITY_LENGTH)

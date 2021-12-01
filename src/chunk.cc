@@ -27,6 +27,8 @@ void writeTankChunk(const Tank* tank, const Tank* hero, float* arr) {
   write(
       TankChunk::POSITION_ANGLE,
       normalizeAngle(getAngle(posRelativeToBody), true));
+  write(TankChunk::POSITION_X, posRelativeToBody.x);
+  write(TankChunk::POSITION_Y, posRelativeToBody.y);
 
   const auto angle = tank->GetAngle();
   const b2Vec2 unit = b2Vec2{std::cos(angle), std::sin(angle)};
