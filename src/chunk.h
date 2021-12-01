@@ -35,8 +35,11 @@ enum struct HeroChunk {
 enum struct BulletChunk {
   POSITION_X,
   POSITION_Y,
+  POSITION_DISTANCE,
+  POSITION_ANGLE,
   VELOCITY_X,
   VELOCITY_Y,
+  VELOCITY_ANGLE,
   Size // Keep this member the last one
 };
 

@@ -16,9 +16,6 @@
 
 const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
 
-const int VELOCITY_ITERATIONS = 24;
-const int POSITION_ITERATIONS = 8;
-
 class BodyCheckerCallback : public b2QueryCallback {
   public:
     bool ReportFixture(b2Fixture* fixture) {

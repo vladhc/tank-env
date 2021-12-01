@@ -87,6 +87,7 @@ TEST(ChunkTest, WriteTankChunk) {
   // THEN
   assertEq(arr, TankChunk::IS_ENEMY, 1);
   assertEq(arr, TankChunk::HITPOINTS, tank.GetHitpoints());
+  assertEq(arr, TankChunk::IS_ALIVE, 1);
   assertEq(arr, TankChunk::FIRE_COOLDOWN, tank.GetFireCooldown());
   assertEq(arr, TankChunk::POSITION_DISTANCE, 5);
   assertEq(arr, TankChunk::POSITION_ANGLE, M_PI / 2);
@@ -121,4 +122,60 @@ TEST(ChunkTest, WriteTankChunk) {
       0.00001
   );
 
+}
+
+TEST(ChunkTest, WriteBulletChunk) {
+  // GIVEN
+  auto world = new b2World(b2Vec2{});
+  Tank hero = Tank(1, 0, world);
+  hero.SetTransform(b2Vec2{-5., 0}, M_PI / 2);
+
+  for (int step=0; step < 300; step++) {
+    hero.Drive(1, 0, 0);
+    world->Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+  }
+  hero.SetTransform(b2Vec2{-5., 0}, M_PI / 2);
+
+  Bullet bullet{world, b2Vec2{-5., -3.}, b2Vec2{1, 0}, &hero};
+  float* arr = new float[BulletChunk::Size];
+
+  // WHEN
+  writeBulletChunk(&bullet, &hero, arr);
+
+  // THEN
+  const float error = 0.0001;
+  ASSERT_NEAR(
+      arr[static_cast<unsigned int>(BulletChunk::POSITION_X)],
+      -3.,
+      error
+  );
+  ASSERT_NEAR(
+      arr[static_cast<unsigned int>(BulletChunk::POSITION_Y)],
+      0.,
+      error
+  );
+  ASSERT_EQ(
+      arr[static_cast<unsigned int>(BulletChunk::POSITION_DISTANCE)],
+      3.
+  );
+  ASSERT_NEAR(
+      arr[static_cast<unsigned int>(BulletChunk::POSITION_ANGLE)],
+      M_PI,
+      error
+  );
+
+  ASSERT_NEAR(
+      arr[static_cast<unsigned int>(BulletChunk::VELOCITY_ANGLE)],
+      -M_PI/2,
+      error
+  );
+  ASSERT_NEAR(
+      arr[static_cast<unsigned int>(BulletChunk::VELOCITY_X)],
+      -hero.GetLinearVelocity().Length(),
+      error);
+  ASSERT_NEAR(
+      arr[static_cast<unsigned int>(BulletChunk::VELOCITY_Y)],
+      -bullet.GetLinearVelocity().Length(),
+      error
+  );
 }

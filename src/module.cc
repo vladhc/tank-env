@@ -94,8 +94,11 @@ PYBIND11_MODULE(tanks, m) {
     py::enum_<BulletChunk>(m, "BulletChunk")
       .value("POSITION_X", BulletChunk::POSITION_X)
       .value("POSITION_Y", BulletChunk::POSITION_Y)
+      .value("POSITION_DISTANCE", BulletChunk::POSITION_DISTANCE)
+      .value("POSITION_ANGLE", BulletChunk::POSITION_ANGLE)
       .value("VELOCITY_X", BulletChunk::VELOCITY_X)
       .value("VELOCITY_Y", BulletChunk::VELOCITY_Y)
+      .value("VELOCITY_ANGLE", BulletChunk::VELOCITY_ANGLE)
       .value("Size", BulletChunk::Size);
     py::class_<Env>(m, "Env")
         .def(py::init<unsigned int>())

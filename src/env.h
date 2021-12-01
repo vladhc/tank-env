@@ -10,6 +10,8 @@
 #include "collision_processor.h"
 
 const float TIME_STEP = 1.0f / 15.0f;
+const int VELOCITY_ITERATIONS = 24;
+const int POSITION_ITERATIONS = 8;
 
 struct Observation {
   const int heroId;
