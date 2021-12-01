@@ -120,11 +120,8 @@ void writeBulletChunk(const Bullet* bullet, const Tank* hero, float* arr) {
       BulletChunk::POSITION_ANGLE,
       normalizeAngle(getAngle(posRelative), true));
 
-  const b2Vec2 vAbsolute = bullet->GetLinearVelocity() - hero->GetLinearVelocity();
-  const b2Vec2 v = hero->GetLocalPoint(vAbsolute + hero->GetPosition());
-  write(BulletChunk::VELOCITY_X, v.x);
-  write(BulletChunk::VELOCITY_Y, v.y);
+  const b2Vec2 v = bullet->GetLinearVelocity() - hero->GetLinearVelocity();
   write(
       BulletChunk::VELOCITY_ANGLE,
-      normalizeAngle(getAngle(vAbsolute) - hero->GetAngle(), true));
+      normalizeAngle(getAngle(v) - hero->GetAngle(), true));
 }

@@ -169,13 +169,4 @@ TEST(ChunkTest, WriteBulletChunk) {
       -M_PI/2,
       error
   );
-  ASSERT_NEAR(
-      arr[static_cast<unsigned int>(BulletChunk::VELOCITY_X)],
-      -hero.GetLinearVelocity().Length(),
-      error);
-  ASSERT_NEAR(
-      arr[static_cast<unsigned int>(BulletChunk::VELOCITY_Y)],
-      -bullet.GetLinearVelocity().Length(),
-      error
-  );
 }
