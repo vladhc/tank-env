@@ -1,5 +1,6 @@
 #include <iostream>
 #include <math.h>
+#include <vector>
 #include "box2d/box2d.h"
 #include "tank.h"
 #include "geom.h"
@@ -22,7 +23,8 @@ Tank::Tank(int id, int teamId, b2World* world) :
     id{id},
     teamId{teamId},
     hitpoints{MAX_HITPOINTS},
-    fire_cooldown{0}
+    fire_cooldown{0},
+    world{world}
 {
   // Body
   b2BodyDef bodyDef;
@@ -245,6 +247,59 @@ int Tank::GetId() const {
 
 int Tank::GetTeamId() const {
   return teamId;
+}
+
+class RayCastCallback : public b2RayCastCallback{
+  public:
+    RayCastCallback(b2Vec2 pos);
+    float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction);
+    void PassFinished();
+    std::vector<b2Vec2> GetRays();
+  private:
+    std::vector<b2Vec2> rays;
+    b2Vec2 pos;
+    b2Vec2 nearestIntersectionPt;
+    float nearestIntersectionFraction;
+};
+
+RayCastCallback::RayCastCallback(b2Vec2 pos) :
+  pos{pos},
+  nearestIntersectionFraction{100000000}
+{}
+
+float RayCastCallback::ReportFixture(
+    b2Fixture *fixture,
+    const b2Vec2 &point,
+    const b2Vec2 &normal,
+    float fraction) {
+  if (fraction < nearestIntersectionFraction) {
+    nearestIntersectionPt = point - pos;
+    nearestIntersectionFraction = fraction;
+  }
+  return 1;
+}
+
+void RayCastCallback::PassFinished() {
+  nearestIntersectionFraction = 100000000;
+  rays.push_back(nearestIntersectionPt);
+}
+
+std::vector<b2Vec2> RayCastCallback::GetRays() {
+  return rays;
+}
+
+std::vector<b2Vec2> Tank::CastRays(unsigned int raysCount, float rayLength) const {
+  const float angleDelta = 2 * M_PI / raysCount;
+  const b2Vec2 pos = body->GetPosition();
+  RayCastCallback callback{pos};
+  for (unsigned i=0; i < raysCount; i++) {
+    float angle = angleDelta * i;
+    b2Vec2 ray{rayLength * std::cos(angle), rayLength * std::sin(angle)};
+    ray = body->GetWorldVector(ray);
+    world->RayCast(&callback, pos, ray);
+    callback.PassFinished();
+  }
+  return callback.GetRays();
 }
 
 void printTank(const Tank& tank) {

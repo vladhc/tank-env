@@ -11,6 +11,8 @@
 
 namespace py = pybind11;
 
+const unsigned int LIDAR_RAYS_COUNT = 24;
+
 py::dict encodeObservation(const Observation &obs) {
     // Hero
     const Tank* hero = obs.tanks[obs.heroId];
@@ -18,6 +20,15 @@ py::dict encodeObservation(const Observation &obs) {
     float* heroArr = new float[heroChunkSize];
     writeHeroChunk(hero, heroArr);
     py::array_t<float> heroObs{heroChunkSize, heroArr};
+
+    // Lidar
+    std::vector<b2Vec2> rays = hero->CastRays(LIDAR_RAYS_COUNT, obs.arenaSize * 4);
+    float* lidarArr = new float[LIDAR_RAYS_COUNT];
+    for (unsigned int i=0; i < LIDAR_RAYS_COUNT; i++) {
+      const auto ray = rays[i];
+      lidarArr[i] = ray.Length();
+    }
+    py::array_t<float> lidarObs{LIDAR_RAYS_COUNT, lidarArr};
 
     // Other tanks
     py::list tanksObs{obs.tanks.size() - 1};
@@ -50,6 +61,7 @@ py::dict encodeObservation(const Observation &obs) {
     using namespace pybind11::literals; // to bring in the `_a` literal
     py::dict obsMap(
         "hero"_a=heroObs,
+        "lidar"_a=lidarObs,
         "tanks"_a=tanksObs,
         "bullets"_a=bulletsObs
     );

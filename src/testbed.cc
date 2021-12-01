@@ -35,7 +35,7 @@ int main() {
 
     // b2Vec2 vLocal = tank->GetLocalPoint(v);
     // std::cout << "v: " << v.Length() << "; ";
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
     SDL_Delay(TIME_STEP * 1000);
   }

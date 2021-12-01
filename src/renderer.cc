@@ -158,6 +158,22 @@ void Renderer::DrawTank(const Tank& tank) {
   }
   SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, alpha);
   SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
+
+  if (tank.GetId() != 0) {
+    return;
+  }
+  // Draw lidar
+  SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
+  std::vector<b2Vec2> rays = tank.CastRays(24, 100);
+  for (const b2Vec2 ray : rays) {
+    // std::cout << ray.x << "," << ray.y << std::endl;
+    SDL_RenderDrawLine(
+        gRenderer,
+        pos.x * SCALE + OFFSET_X,
+        pos.y * SCALE + OFFSET_Y,
+        (pos.x + ray.x) * SCALE + OFFSET_X,
+        (pos.y + ray.y) * SCALE + OFFSET_Y);
+  }
 }
 
 void Renderer::Render(const Env &env) {

@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "box2d/box2d.h"
 #include "game_object.h"
 #include "bullet.h"
@@ -8,7 +9,7 @@ const unsigned int MAX_HITPOINTS = 100;
 
 class Tank : public GameObject {
   public:
-    Tank(int id, int teamId, b2World* world);
+    Tank(int id, int teamId, b2World* world_);
     ~Tank();
     void SetTransform(const b2Vec2& position, float bodyAngle);
     void SetTransform(const b2Vec2& position, float bodyAngle, float turretAngle);
@@ -33,11 +34,13 @@ class Tank : public GameObject {
     void Reset();
     int GetId() const;
     int GetTeamId() const;
+    std::vector<b2Vec2> CastRays(unsigned int raysCount, float rayLength) const;
   private:
     int id;
     int teamId;
     unsigned int hitpoints;
     unsigned int fire_cooldown;
+    b2World* world;
     b2Body* body;
     b2Body* turret;
     b2RevoluteJoint* joint;
