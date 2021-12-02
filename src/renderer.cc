@@ -136,7 +136,7 @@ void Renderer::DrawTank(const Tank& tank) {
     alpha = 0x88;
   }
   if (tank.GetTeamId() == 0) {
-    SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, alpha);
+    SDL_SetRenderDrawColor(gRenderer, 0x71, 0x71, 0xEC, alpha);
   } else {
     SDL_SetRenderDrawColor(gRenderer, 0x11, 0xEC, 0x11, alpha);
   }
@@ -156,17 +156,20 @@ void Renderer::DrawTank(const Tank& tank) {
     };
     turretPoints[i].y = turretPoints[i].y - int(TANK_LAYER_OFFSET * SCALE);
   }
-  SDL_SetRenderDrawColor(gRenderer, 0xEF, 0xEC, 0xE7, alpha);
-  SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
-
-  if (tank.GetId() != 0) {
-    return;
+  if (tank.GetTeamId() == 0) {
+    SDL_SetRenderDrawColor(gRenderer, 0x71, 0x71, 0xEC, alpha);
+  } else {
+    SDL_SetRenderDrawColor(gRenderer, 0x11, 0xEC, 0x11, alpha);
   }
-  // Draw lidar
-  SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
-  std::vector<b2Vec2> rays = tank.CastRays(24, 100);
+  SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
+}
+
+void Renderer::DrawLidar(const Tank& tank) {
+  SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0x77);
+  auto lidar = tank.GetLidar();
+  std::vector<b2Vec2> rays = lidar->CastRays();
+  auto pos = tank.GetPosition();
   for (const b2Vec2 ray : rays) {
-    // std::cout << ray.x << "," << ray.y << std::endl;
     SDL_RenderDrawLine(
         gRenderer,
         pos.x * SCALE + OFFSET_X,
@@ -177,11 +180,15 @@ void Renderer::DrawTank(const Tank& tank) {
 }
 
 void Renderer::Render(const Env &env) {
-  SDL_SetRenderDrawColor(gRenderer, 0xBC, 0xB6, 0x54, 0xFF );
+  SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF );
+  // SDL_SetRenderDrawColor(gRenderer, 0xBC, 0xB6, 0x54, 0xFF );
   SDL_RenderClear(gRenderer);
   DrawArena(env.GetArenaSize());
 
   for (const Tank* tank : env.GetTanks()) {
+    if (tank->GetId() == 0) {
+      DrawLidar(*tank);
+    }
     DrawTank(*tank);
   }
   for (const Bullet* bullet : env.GetBullets()) {

@@ -8,6 +8,7 @@
 #include "bullet.h"
 #include "strategic_point.h"
 #include "collision_processor.h"
+#include "lidar.h"
 
 const float TIME_STEP = 1.0f / 15.0f;
 const int VELOCITY_ITERATIONS = 24;
@@ -23,7 +24,7 @@ struct Observation {
 
 class Env {
   public:
-    Env(unsigned int tanksCount);
+    Env(unsigned int tanksCount, unsigned int lidarRaysCount);
     ~Env();
     std::vector<Observation> Reset();
     std::tuple<

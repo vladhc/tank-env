@@ -12,4 +12,5 @@ class Renderer {
     // void DrawStrategicPoint(const StrategicPoint& point);
     void DrawBullet(const Bullet& bullet);
     void DrawTank(const Tank& tank);
+    void DrawLidar(const Tank& tank);
 };

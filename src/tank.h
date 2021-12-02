@@ -1,15 +1,16 @@
 #pragma once
-#include <vector>
+// #include <vector>
 #include "box2d/box2d.h"
 #include "game_object.h"
 #include "bullet.h"
+#include "lidar.h"
 
 const unsigned int MAX_FIRE_COOLDOWN = 30;
 const unsigned int MAX_HITPOINTS = 100;
 
 class Tank : public GameObject {
   public:
-    Tank(int id, int teamId, b2World* world_);
+    Tank(int id, int teamId, b2World* world);
     ~Tank();
     void SetTransform(const b2Vec2& position, float bodyAngle);
     void SetTransform(const b2Vec2& position, float bodyAngle, float turretAngle);
@@ -21,7 +22,7 @@ class Tank : public GameObject {
     b2Vec2 GetTurretLocalPoint(const b2Vec2& globalPoint) const;
     b2Vec2 GetWorldVector(const b2Vec2& localVector) const;
     float GetSize() const;
-    b2Body* GetBody();
+    const b2Body* GetBody() const;
     b2Body* GetTurret();
     float GetTurretAngle() const;
     float GetTurretAngularVelocity() const;
@@ -34,16 +35,18 @@ class Tank : public GameObject {
     void Reset();
     int GetId() const;
     int GetTeamId() const;
-    std::vector<b2Vec2> CastRays(unsigned int raysCount, float rayLength) const;
+    void AttachToGround(b2Body* ground, b2World* world);
+    void SetLidar(const Lidar* lidar);
+    const Lidar* GetLidar() const;
   private:
     int id;
     int teamId;
     unsigned int hitpoints;
     unsigned int fire_cooldown;
-    b2World* world;
     b2Body* body;
     b2Body* turret;
     b2RevoluteJoint* joint;
+    const Lidar* lidar;
 };
 
 void printTank(const Tank& tank);

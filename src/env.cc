@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "box2d/box2d.h"
 #include "tank.h"
+#include "lidar.h"
 #include "bullet.h"
 #include "env.h"
 #include "action.h"
@@ -28,7 +29,7 @@ class BodyCheckerCallback : public b2QueryCallback {
     bool foundBodies;
 };
 
-Env::Env(unsigned int tanksCount) {
+Env::Env(unsigned int tanksCount, unsigned int lidarRaysCount) {
   b2Vec2 gravity(0.0f, 0.0f);
   world_ = new b2World(gravity);
 
@@ -77,16 +78,9 @@ Env::Env(unsigned int tanksCount) {
 
   for (unsigned int idx=0; idx < tanksCount; idx++) {
     Tank* tank = new Tank(idx, idx % 2 == 0, world_);
-    b2FrictionJointDef jd;
-    jd.bodyA = ground;
-    jd.bodyB = tank->GetBody();
-    jd.localAnchorA.SetZero();
-    jd.localAnchorB = tank->GetBody()->GetLocalCenter();
-    jd.collideConnected = true;
-    jd.maxForce = 100.0f;
-    jd.maxTorque = 5.0f;
-
-    world_->CreateJoint(&jd);
+    tank->AttachToGround(ground, world_);
+    auto lidar = new Lidar(world_, tank->GetBody(), 5 * ARENA_SIZE, lidarRaysCount);
+    tank->SetLidar(lidar);
     tanks.push_back(tank);
     alivePrevStep.push_back(true);
   }

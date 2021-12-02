@@ -22,7 +22,7 @@ py::dict encodeObservation(const Observation &obs) {
     py::array_t<float> heroObs{heroChunkSize, heroArr};
 
     // Lidar
-    std::vector<b2Vec2> rays = hero->CastRays(LIDAR_RAYS_COUNT, obs.arenaSize * 4);
+    std::vector<b2Vec2> rays = hero->GetLidar()->CastRays();
     float* lidarArr = new float[LIDAR_RAYS_COUNT];
     for (unsigned int i=0; i < LIDAR_RAYS_COUNT; i++) {
       const auto ray = rays[i];
@@ -113,7 +113,7 @@ PYBIND11_MODULE(tanks, m) {
       .value("VELOCITY_ANGLE", BulletChunk::VELOCITY_ANGLE)
       .value("Size", BulletChunk::Size);
     py::class_<Env>(m, "Env")
-        .def(py::init<unsigned int>())
+        .def(py::init<unsigned int, unsigned int>())
         .def("damage_tank",
             [](Env &env, int tankId, unsigned int damage) {
               env.DamageTank(tankId, damage);

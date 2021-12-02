@@ -6,6 +6,7 @@
 #include "geom.h"
 #include "game_object.h"
 #include "bullet.h"
+#include "lidar.h"
 
 const float MAX_ANGULAR_VELOCITY = 1.2f;
 const float ANGLE_TORQUE = 1.0f;
@@ -23,8 +24,7 @@ Tank::Tank(int id, int teamId, b2World* world) :
     id{id},
     teamId{teamId},
     hitpoints{MAX_HITPOINTS},
-    fire_cooldown{0},
-    world{world}
+    fire_cooldown{0}
 {
   // Body
   b2BodyDef bodyDef;
@@ -111,7 +111,7 @@ float Tank::GetSize() const {
   return WIDTH;
 }
 
-b2Body* Tank::GetBody() {
+const b2Body* Tank::GetBody() const {
   return body;
 }
 
@@ -249,57 +249,25 @@ int Tank::GetTeamId() const {
   return teamId;
 }
 
-class RayCastCallback : public b2RayCastCallback{
-  public:
-    RayCastCallback(b2Vec2 pos);
-    float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction);
-    void PassFinished();
-    std::vector<b2Vec2> GetRays();
-  private:
-    std::vector<b2Vec2> rays;
-    b2Vec2 pos;
-    b2Vec2 nearestIntersectionPt;
-    float nearestIntersectionFraction;
-};
+void Tank::AttachToGround(b2Body* ground, b2World* world) {
+    b2FrictionJointDef jd;
+    jd.bodyA = ground;
+    jd.bodyB = body;
+    jd.localAnchorA.SetZero();
+    jd.localAnchorB = body->GetLocalCenter();
+    jd.collideConnected = true;
+    jd.maxForce = 100.0f;
+    jd.maxTorque = 5.0f;
 
-RayCastCallback::RayCastCallback(b2Vec2 pos) :
-  pos{pos},
-  nearestIntersectionFraction{100000000}
-{}
-
-float RayCastCallback::ReportFixture(
-    b2Fixture *fixture,
-    const b2Vec2 &point,
-    const b2Vec2 &normal,
-    float fraction) {
-  if (fraction < nearestIntersectionFraction) {
-    nearestIntersectionPt = point - pos;
-    nearestIntersectionFraction = fraction;
-  }
-  return 1;
+    world->CreateJoint(&jd);
 }
 
-void RayCastCallback::PassFinished() {
-  nearestIntersectionFraction = 100000000;
-  rays.push_back(nearestIntersectionPt);
+void Tank::SetLidar(const Lidar* lidar) {
+  this->lidar = lidar;
 }
 
-std::vector<b2Vec2> RayCastCallback::GetRays() {
-  return rays;
-}
-
-std::vector<b2Vec2> Tank::CastRays(unsigned int raysCount, float rayLength) const {
-  const float angleDelta = 2 * M_PI / raysCount;
-  const b2Vec2 pos = body->GetPosition();
-  RayCastCallback callback{pos};
-  for (unsigned i=0; i < raysCount; i++) {
-    float angle = angleDelta * i;
-    b2Vec2 ray{rayLength * std::cos(angle), rayLength * std::sin(angle)};
-    ray = body->GetWorldVector(ray);
-    world->RayCast(&callback, pos, ray);
-    callback.PassFinished();
-  }
-  return callback.GetRays();
+const Lidar* Tank::GetLidar() const {
+  return lidar;
 }
 
 void printTank(const Tank& tank) {

@@ -9,7 +9,7 @@
 
 TEST(EnvTest, EpisodeCompleteWhenSecondTeamIsDead) {
   // GIVEN
-  Env env{10};
+  Env env{10, 0};
   for (auto tank : env.GetTanks()) {
     if (tank->GetTeamId() == 1) {
       int hp = tank->GetHitpoints();
@@ -26,7 +26,7 @@ TEST(EnvTest, EpisodeCompleteWhenSecondTeamIsDead) {
 
 TEST(EnvTest, EpisodeNoCompleteWhenTeamsAlive) {
   // GIVEN
-  Env env{10};
+  Env env{10, 0};
   // Kill 1 tank of each team
   for (int teamId : {0, 1}) {
     for (auto tank : env.GetTanks()) {
@@ -47,7 +47,7 @@ TEST(EnvTest, EpisodeNoCompleteWhenTeamsAlive) {
 
 TEST(EnvTest, DeadTankIsReturnedOnce) {
   // GIVEN
-  Env env{10};
+  Env env{10, 0};
   // Kill 1 tank
   const int tankId = 0;
   for (auto tank : env.GetTanks()) {
@@ -85,7 +85,7 @@ TEST(EnvTest, DeadTankIsReturnedOnce) {
 
 TEST(EnvTest, DeadTankIsDoneAndPunished) {
   // GIVEN
-  Env env{10};
+  Env env{10, 0};
   // Kill 1 tank of each team
   int tankId = 0;
   for (auto tank : env.GetTanks()) {
@@ -123,7 +123,7 @@ TEST(EnvTest, DeadTankIsDoneAndPunished) {
 
 TEST(EnvTest, ResetRemovesBullets) {
   // GIVEN
-  Env env{10};
+  Env env{10, 0};
   std::map<int, Action> actions;
   for (auto tank : env.GetTanks()) {
     actions[tank->GetId()] = Action{0, 0, true};
@@ -139,7 +139,7 @@ TEST(EnvTest, ResetRemovesBullets) {
 
 TEST(EnvTest, RandomplyPlacesTanksOnTheArena) {
   // GIVEN
-  Env env{10};
+  Env env{10, 0};
   auto tanks = env.GetTanks();
   env.Reset();
   std::vector<float> angles(tanks.size());
@@ -164,7 +164,7 @@ TEST(EnvTest, RandomplyPlacesTanksOnTheArena) {
 
 TEST(EnvTest, ResetDoesntMakeTanksOverlap) {
   // GIVEN
-  Env env{10};
+  Env env{10, 0};
   const float arenaSize = env.GetArenaSize();
   auto tanks = env.GetTanks();
 
@@ -196,7 +196,7 @@ TEST(EnvTest, ResetDoesntMakeTanksOverlap) {
 
 TEST(EnvTest, ResetStopsTank) {
   // GIVEN
-  Env env{2};
+  Env env{2, 0};
   env.Reset();
   auto tank = env.GetTanks()[0];
 
@@ -224,7 +224,7 @@ TEST(EnvTest, ResetStopsTank) {
 
 TEST(EnvTest, TwoBulletsCollidingDisappear) {
   // GIVEN
-  Env env{2};
+  Env env{2, 0};
   env.Reset();
   env.SetTransform(0, b2Vec2{-10., 0}, 0, 0);
   env.SetTransform(1, b2Vec2{10., 0}, -M_PI, -M_PI);
@@ -254,7 +254,7 @@ TEST(EnvTest, TwoBulletsCollidingDisappear) {
 
 TEST(EnvTest, DeadTankDoesntMove) {
   // GIVEN
-  Env env{3};
+  Env env{3, 0};
   env.Reset();
   env.SetTransform(0, b2Vec2{-10., 0}, 0, 0);
   env.SetTransform(1, b2Vec2{10., 0}, -M_PI, -M_PI);

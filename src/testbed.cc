@@ -9,7 +9,7 @@
 int main() {
   Renderer r;
 
-  Env env{10};
+  Env env{10, 24};
   env.Reset();
   KeyboardController keyController;
 
