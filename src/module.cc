@@ -12,8 +12,6 @@
 
 namespace py = pybind11;
 
-const unsigned int LIDAR_RAYS_COUNT = 24;
-
 py::dict encodeObservation(const Observation &obs) {
     // Hero
     const Tank* hero = obs.tanks[obs.heroId];
@@ -24,12 +22,28 @@ py::dict encodeObservation(const Observation &obs) {
 
     // Lidar
     std::vector<Ray> rays = hero->GetLidar()->CastRays();
-    float* lidarArr = new float[LIDAR_RAYS_COUNT];
-    for (unsigned int i=0; i < LIDAR_RAYS_COUNT; i++) {
+    float* lidarDistanceArr = new float[rays.size()];
+    float* lidarTankLocatedArr = new float[rays.size()];
+    float* lidarEnemyLocatedArr = new float[rays.size()];
+    for (unsigned int i=0; i < rays.size(); i++) {
       const auto ray = rays[i];
-      lidarArr[i] = ray.pt.Length();
+      lidarDistanceArr[i] = ray.pt.Length();
+      if (ray.obj != nullptr && ray.obj->type == TANK) {
+        lidarTankLocatedArr[i] = 1;
+        Tank* t = (Tank*)ray.obj;
+        if(t->GetTeamId() != hero->GetTeamId()) {
+          lidarEnemyLocatedArr[i] = 1;
+        } else {
+          lidarEnemyLocatedArr[i] = 0;
+        }
+      } else {
+        lidarTankLocatedArr[i] = 0;
+      }
     }
-    py::array_t<float> lidarObs{LIDAR_RAYS_COUNT, lidarArr};
+    long int raysSize = static_cast<long int>(rays.size());
+    py::array_t<float> lidarDistanceObs{raysSize, lidarDistanceArr};
+    py::array_t<float> lidarTankLocatedObs{raysSize, lidarTankLocatedArr};
+    py::array_t<float> lidarEnemyLocatedObs{raysSize, lidarEnemyLocatedArr};
 
     // Other tanks
     py::list tanksObs{obs.tanks.size() - 1};
@@ -62,7 +76,9 @@ py::dict encodeObservation(const Observation &obs) {
     using namespace pybind11::literals; // to bring in the `_a` literal
     py::dict obsMap(
         "hero"_a=heroObs,
-        "lidar"_a=lidarObs,
+        "lidar_dist"_a=lidarDistanceObs,
+        "lidar_is_tank"_a=lidarTankLocatedObs,
+        "lidar_is_enemy"_a=lidarEnemyLocatedObs,
         "tanks"_a=tanksObs,
         "bullets"_a=bulletsObs
     );
