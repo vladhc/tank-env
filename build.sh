@@ -63,7 +63,7 @@ then
   echo "Building and running tests"
   c++ $SRC_COMMON \
     tests/env_test.cc tests/geom_test.cc tests/tank_test.cc \
-    src/chunk.cc tests/chunk_test.cc \
+    src/chunk.cc tests/chunk_test.cc tests/lidar_test.cc \
     -g -rdynamic \
     $INCLUDE_COMMON \
     -Isrc \

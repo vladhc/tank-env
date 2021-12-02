@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include "env.h"
+#include "lidar.h"
 #include "point.h"
 // #include "strategic_point.h"
 #include "bullet.h"
@@ -167,15 +168,15 @@ void Renderer::DrawTank(const Tank& tank) {
 void Renderer::DrawLidar(const Tank& tank) {
   SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0x77);
   auto lidar = tank.GetLidar();
-  std::vector<b2Vec2> rays = lidar->CastRays();
+  std::vector<Ray> rays = lidar->CastRays();
   auto pos = tank.GetPosition();
-  for (const b2Vec2 ray : rays) {
+  for (const Ray ray : rays) {
     SDL_RenderDrawLine(
         gRenderer,
         pos.x * SCALE + OFFSET_X,
         pos.y * SCALE + OFFSET_Y,
-        (pos.x + ray.x) * SCALE + OFFSET_X,
-        (pos.y + ray.y) * SCALE + OFFSET_Y);
+        (pos.x + ray.pt.x) * SCALE + OFFSET_X,
+        (pos.y + ray.pt.y) * SCALE + OFFSET_Y);
   }
 }
 

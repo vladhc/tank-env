@@ -5,6 +5,7 @@
 #include <pybind11/stl.h>
 #include <cmath>
 #include "env.h"
+#include "lidar.h"
 #include "geom.h"
 #include "renderer.h"
 #include "chunk.h"
@@ -22,11 +23,11 @@ py::dict encodeObservation(const Observation &obs) {
     py::array_t<float> heroObs{heroChunkSize, heroArr};
 
     // Lidar
-    std::vector<b2Vec2> rays = hero->GetLidar()->CastRays();
+    std::vector<Ray> rays = hero->GetLidar()->CastRays();
     float* lidarArr = new float[LIDAR_RAYS_COUNT];
     for (unsigned int i=0; i < LIDAR_RAYS_COUNT; i++) {
       const auto ray = rays[i];
-      lidarArr[i] = ray.Length();
+      lidarArr[i] = ray.pt.Length();
     }
     py::array_t<float> lidarObs{LIDAR_RAYS_COUNT, lidarArr};
 

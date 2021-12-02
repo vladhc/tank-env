@@ -1,5 +1,4 @@
 #pragma once
-// #include <vector>
 #include "box2d/box2d.h"
 #include "game_object.h"
 #include "bullet.h"
