@@ -22,10 +22,11 @@ py::dict encodeObservation(const Observation &obs) {
 
     // Lidar
     std::vector<Ray> rays = hero->GetLidar()->CastRays();
-    float* lidarDistanceArr = new float[rays.size()];
-    float* lidarTankLocatedArr = new float[rays.size()];
-    float* lidarEnemyLocatedArr = new float[rays.size()];
-    for (unsigned int i=0; i < rays.size(); i++) {
+    long int raysSize = static_cast<long int>(rays.size());
+    float* lidarDistanceArr = new float[raysSize];
+    float* lidarTankLocatedArr = new float[raysSize];
+    float* lidarEnemyLocatedArr = new float[raysSize];
+    for (unsigned int i=0; i < raysSize; i++) {
       const auto ray = rays[i];
       lidarDistanceArr[i] = ray.pt.Length();
       if (ray.obj != nullptr && ray.obj->type == TANK) {
@@ -38,9 +39,9 @@ py::dict encodeObservation(const Observation &obs) {
         }
       } else {
         lidarTankLocatedArr[i] = 0;
+        lidarEnemyLocatedArr[i] = 0;
       }
     }
-    long int raysSize = static_cast<long int>(rays.size());
     py::array_t<float> lidarDistanceObs{raysSize, lidarDistanceArr};
     py::array_t<float> lidarTankLocatedObs{raysSize, lidarTankLocatedArr};
     py::array_t<float> lidarEnemyLocatedObs{raysSize, lidarEnemyLocatedArr};
