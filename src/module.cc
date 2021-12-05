@@ -19,6 +19,7 @@ py::dict encodeObservation(const Observation &obs) {
     float* heroArr = new float[heroChunkSize];
     writeHeroChunk(hero, heroArr);
     py::array_t<float> heroObs{heroChunkSize, heroArr};
+    delete heroArr;
 
     // Lidar
     std::vector<Ray> rays = hero->GetLidar()->CastRays();
@@ -45,6 +46,9 @@ py::dict encodeObservation(const Observation &obs) {
     py::array_t<float> lidarDistanceObs{raysSize, lidarDistanceArr};
     py::array_t<float> lidarTankLocatedObs{raysSize, lidarTankLocatedArr};
     py::array_t<float> lidarEnemyLocatedObs{raysSize, lidarEnemyLocatedArr};
+    delete lidarDistanceArr;
+    delete lidarTankLocatedArr;
+    delete lidarEnemyLocatedArr;
 
     // Other tanks
     py::list tanksObs{obs.tanks.size() - 1};
@@ -57,6 +61,7 @@ py::dict encodeObservation(const Observation &obs) {
       float* tankArr = new float[tankChunkSize];
       writeTankChunk(tank, hero, tankArr);
       tanksObs[idx] = py::array_t<float>(tankChunkSize, tankArr);
+      delete tankArr;
       idx++;
     }
 
@@ -72,6 +77,7 @@ py::dict encodeObservation(const Observation &obs) {
       float* bulletArr = new float[bulletChunkSize];
       writeBulletChunk(bullet, hero, bulletArr);
       bulletsObs[i] = py::array_t<float>(bulletChunkSize, bulletArr);
+      delete bulletArr;
     }
 
     using namespace pybind11::literals; // to bring in the `_a` literal
