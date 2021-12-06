@@ -143,7 +143,7 @@ TEST(ChunkTest, WriteBulletChunk) {
   writeBulletChunk(&bullet, &hero, arr);
 
   // THEN
-  const float error = 0.0001;
+  const float error = 0.001;
   ASSERT_NEAR(
       arr[static_cast<unsigned int>(BulletChunk::POSITION_X)],
       -3.,

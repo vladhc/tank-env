@@ -137,7 +137,7 @@ PYBIND11_MODULE(tanks, m) {
       .value("VELOCITY_ANGLE", BulletChunk::VELOCITY_ANGLE)
       .value("Size", BulletChunk::Size);
     py::class_<Env>(m, "Env")
-        .def(py::init<unsigned int, unsigned int>())
+        .def(py::init<unsigned int, unsigned int, size_t>())
         .def("damage_tank",
             [](Env &env, int tankId, unsigned int damage) {
               env.DamageTank(tankId, damage);

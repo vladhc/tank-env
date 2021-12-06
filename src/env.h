@@ -24,7 +24,7 @@ struct Observation {
 
 class Env {
   public:
-    Env(unsigned int tanksCount, unsigned int lidarRaysCount, unsigned int obstaclesCount);
+    Env(unsigned int tanksCount, unsigned int lidarRaysCount, size_t obstaclesCount);
     ~Env();
     std::vector<Observation> Reset();
     std::tuple<

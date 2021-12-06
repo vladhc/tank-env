@@ -31,7 +31,7 @@ class BodyCheckerCallback : public b2QueryCallback {
     bool foundBodies;
 };
 
-Env::Env(unsigned int tanksCount, unsigned int lidarRaysCount, unsigned int obstaclesCount) {
+Env::Env(unsigned int tanksCount, unsigned int lidarRaysCount, size_t obstaclesCount) {
   b2Vec2 gravity(0.0f, 0.0f);
   world_ = new b2World(gravity);
 
@@ -87,7 +87,7 @@ Env::Env(unsigned int tanksCount, unsigned int lidarRaysCount, unsigned int obst
     alivePrevStep.push_back(true);
   }
 
-  for (unsigned int idx=0; idx < obstaclesCount; idx++) {
+  for (size_t idx=0; idx < obstaclesCount; idx++) {
     b2BodyDef bodyDef;
     bodyDef.type = b2_staticBody;
     auto obstacle = world_->CreateBody(&bodyDef);

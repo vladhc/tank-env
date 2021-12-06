@@ -174,7 +174,7 @@ void Renderer::DrawBody(const b2Body& body) {
     else if (shape->m_type == 2) {
       const b2PolygonShape* poly = static_cast<const b2PolygonShape*>(shape);
       SDL_Point points[poly->m_count + 1];
-      for (unsigned int i=0; i < poly->m_count; i++) {
+      for (int i=0; i < poly->m_count; i++) {
         auto pt = body.GetWorldPoint(poly->m_vertices[i]);
         points[i] = SDL_Point{
           int(pt.x * SCALE + OFFSET_X),
