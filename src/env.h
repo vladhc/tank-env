@@ -24,7 +24,7 @@ struct Observation {
 
 class Env {
   public:
-    Env(unsigned int tanksCount, unsigned int lidarRaysCount);
+    Env(unsigned int tanksCount, unsigned int lidarRaysCount, unsigned int obstaclesCount);
     ~Env();
     std::vector<Observation> Reset();
     std::tuple<
@@ -33,6 +33,7 @@ class Env {
       std::vector<char>
     > Step(const std::map<int, Action> actions);
     std::vector<const Tank*> GetTanks() const;
+    std::vector<const b2Body*> GetObstacles() const;
     void DamageTank(int tankId, unsigned int damage);
     void SetTransform(int tankId, const b2Vec2& pos, float bodyAngle, float turretAngle);
     // const StrategicPoint* GetStrategicPoint() const;
@@ -43,6 +44,7 @@ class Env {
     std::vector<Observation> CreateObservations() const;
     std::vector<Tank*> tanks;
     std::vector<Bullet*> bullets;
+    std::vector<b2Body*> obstacles;
     b2World* world_;
     // StrategicPoint* strategicPoint;
     CollisionProcessor* collisionProcessor;

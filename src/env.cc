@@ -16,6 +16,8 @@
 #include "collision_processor.h"
 
 const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
+const float OBSTACLE_W = 5.0f;
+const float OBSTACLE_H = 0.5f;
 
 class BodyCheckerCallback : public b2QueryCallback {
   public:
@@ -29,7 +31,7 @@ class BodyCheckerCallback : public b2QueryCallback {
     bool foundBodies;
 };
 
-Env::Env(unsigned int tanksCount, unsigned int lidarRaysCount) {
+Env::Env(unsigned int tanksCount, unsigned int lidarRaysCount, unsigned int obstaclesCount) {
   b2Vec2 gravity(0.0f, 0.0f);
   world_ = new b2World(gravity);
 
@@ -85,6 +87,23 @@ Env::Env(unsigned int tanksCount, unsigned int lidarRaysCount) {
     alivePrevStep.push_back(true);
   }
 
+  for (unsigned int idx=0; idx < obstaclesCount; idx++) {
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_staticBody;
+    auto obstacle = world_->CreateBody(&bodyDef);
+
+    b2PolygonShape obstacleShape;
+    obstacleShape.SetAsBox(OBSTACLE_W, OBSTACLE_H);
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &obstacleShape;
+    fixtureDef.density = 1.0f;
+    fixtureDef.filter.categoryBits = 0x0004;
+    fixtureDef.filter.maskBits = 0x0001 | 0x0002 | 0x0004;
+    obstacle->CreateFixture(&fixtureDef);
+
+    obstacles.push_back(obstacle);
+  }
+
   // strategicPoint = new StrategicPoint(world_, b2Vec2(0.0f, 0.0f));
 
   collisionProcessor = new CollisionProcessor(world_);
@@ -135,6 +154,12 @@ std::vector<Observation> Env::Reset() {
       randomEngine
   );
   BodyCheckerCallback bodyCheckerCallback;
+
+  for (b2Body* obstacle : obstacles) {
+    const float angle = angleGen();
+    obstacle->SetTransform(b2Vec2{coordGen(), coordGen()}, angle);
+  }
+
 
   for (Tank* tank : tanks) {
     const float angle = angleGen();
@@ -283,6 +308,14 @@ std::vector<const Tank*> Env::GetTanks() const {
     tanksImmutable.push_back(tank);
   }
   return tanksImmutable;
+}
+
+std::vector<const b2Body*> Env::GetObstacles() const {
+  std::vector<const b2Body*> obstaclesImmutable;
+  for (const b2Body* obstacle : obstacles) {
+    obstaclesImmutable.push_back(obstacle);
+  }
+  return obstaclesImmutable;
 }
 
 void Env::DamageTank(int tankId, unsigned int damage) {

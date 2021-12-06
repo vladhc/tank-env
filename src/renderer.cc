@@ -180,6 +180,23 @@ void Renderer::DrawLidar(const Tank& tank) {
   }
 }
 
+void Renderer::DrawObstacle(const b2Body& obstacle) {
+  SDL_SetRenderDrawColor(gRenderer, 0x73, 0x6E, 0x74, 0xFF);
+
+  const b2Fixture* fixture = obstacle.GetFixtureList();
+  const b2PolygonShape* shape = static_cast<const b2PolygonShape*>(fixture->GetShape());
+  SDL_Point points[shape->m_count + 1];
+  for (unsigned int i=0; i < shape->m_count; i++) {
+    auto pt = obstacle.GetWorldPoint(shape->m_vertices[i]);
+    points[i] = SDL_Point{
+      int(pt.x * SCALE + OFFSET_X),
+      int(pt.y * SCALE + OFFSET_Y)
+    };
+  }
+  points[shape->m_count] = points[0];
+  SDL_RenderDrawLines(gRenderer, points, shape->m_count + 1);
+}
+
 void Renderer::Render(const Env &env) {
   SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF );
   // SDL_SetRenderDrawColor(gRenderer, 0xBC, 0xB6, 0x54, 0xFF );
@@ -194,6 +211,9 @@ void Renderer::Render(const Env &env) {
   }
   for (const Bullet* bullet : env.GetBullets()) {
     DrawBullet(*bullet);
+  }
+  for (const auto obstacle : env.GetObstacles()) {
+    DrawObstacle(*obstacle);
   }
 
   // DrawStrategicPoint(*env.GetStrategicPoint());
