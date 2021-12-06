@@ -1,5 +1,6 @@
 #include <iostream>
 #include <gtest/gtest.h>
+#include "box2d/box2d.h"
 #include "tank.h"
 #include "env.h"
 #include "chunk.h"
@@ -192,5 +193,56 @@ TEST(ChunkTest, WriteBulletChunk) {
       arr[static_cast<unsigned int>(BulletChunk::VELOCITY_ANGLE)],
       -M_PI/2,
       ERROR
+  );
+}
+
+TEST(ChunkTest, WriteObstacleChunk) {
+  // GIVEN
+  auto world = new b2World(b2Vec2{});
+  Tank hero = Tank(1, 0, world);
+  b2Vec2 heroPos{-5., 10};
+  hero.SetTransform(heroPos, M_PI / 4);
+
+  b2BodyDef bodyDef;
+  bodyDef.type = b2_staticBody;
+  auto obstacle = world->CreateBody(&bodyDef);
+
+  const float width = 10;
+  const float height = 2;
+  b2PolygonShape obstacleShape;
+  // args: half-width, half-height
+  obstacleShape.SetAsBox(width / 2, height / 2);
+  b2FixtureDef fixtureDef;
+  fixtureDef.shape = &obstacleShape;
+  fixtureDef.density = 1.0f;
+  obstacle->CreateFixture(&fixtureDef);
+
+  b2Vec2 obstaclePos{5., 0};
+  obstacle->SetTransform(obstaclePos, -M_PI / 4);
+
+  float* arr = new float[ObstacleChunk::Size];
+
+  // WHEN
+  writeObstacleChunk(obstacle, &hero, arr);
+
+  // THEN
+  b2Vec2 v = obstaclePos - heroPos;
+  ASSERT_FLOAT_EQ(
+      arr[static_cast<unsigned int>(ObstacleChunk::POSITION_DISTANCE)],
+      sqrt(v.x * v.x + v.y * v.y)
+  );
+
+  ASSERT_NEAR(
+      arr[static_cast<unsigned int>(ObstacleChunk::ANGLE)],
+      -M_PI / 2,
+      ERROR
+  );
+  ASSERT_FLOAT_EQ(
+      arr[static_cast<unsigned int>(ObstacleChunk::WIDTH)],
+      width
+  );
+  ASSERT_FLOAT_EQ(
+      arr[static_cast<unsigned int>(ObstacleChunk::HEIGHT)],
+      height
   );
 }

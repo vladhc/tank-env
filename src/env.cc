@@ -134,6 +134,7 @@ std::vector<Observation> Env::CreateObservations() const {
       ARENA_SIZE,
       // strategicPoint,
       GetBullets(),
+      GetObstacles()
     });
   }
   return obs;

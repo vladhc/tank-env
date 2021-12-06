@@ -20,6 +20,7 @@ struct Observation {
   const float arenaSize;
   // const StrategicPoint* strategicPoint;
   const std::vector<const Bullet*> bullets;
+  const std::vector<const b2Body*> obstacles;
 };
 
 class Env {

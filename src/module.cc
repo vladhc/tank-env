@@ -80,6 +80,16 @@ py::dict encodeObservation(const Observation &obs) {
       delete bulletArr;
     }
 
+    unsigned int obstacleChunkSize = static_cast<unsigned int>(ObstacleChunk::Size);
+    py::list obstaclesObs{obs.obstacles.size()};
+    for (unsigned int i=0; i < obs.obstacles.size(); i++) {
+      const b2Body* obstacle = obs.obstacles[i];
+      float* obstacleArr = new float[obstacleChunkSize];
+      writeObstacleChunk(obstacle, hero, obstacleArr);
+      obstaclesObs[i] = py::array_t<float>(obstacleChunkSize, obstacleArr);
+      delete obstacleArr;
+    }
+
     using namespace pybind11::literals; // to bring in the `_a` literal
     py::dict obsMap(
         "hero"_a=heroObs,
@@ -87,7 +97,8 @@ py::dict encodeObservation(const Observation &obs) {
         "lidar_is_tank"_a=lidarTankLocatedObs,
         "lidar_is_enemy"_a=lidarEnemyLocatedObs,
         "tanks"_a=tanksObs,
-        "bullets"_a=bulletsObs
+        "bullets"_a=bulletsObs,
+        "obstacles"_a=obstaclesObs
     );
 
     return obsMap;
@@ -136,6 +147,15 @@ PYBIND11_MODULE(tanks, m) {
       .value("POSITION_ANGLE", BulletChunk::POSITION_ANGLE)
       .value("VELOCITY_ANGLE", BulletChunk::VELOCITY_ANGLE)
       .value("Size", BulletChunk::Size);
+    py::enum_<ObstacleChunk>(m, "ObstacleChunk")
+      .value("POSITION_DISTANCE", ObstacleChunk::POSITION_DISTANCE)
+      .value("POSITION_X", ObstacleChunk::POSITION_X)
+      .value("POSITION_Y", ObstacleChunk::POSITION_Y)
+      .value("POSITION_ANGLE", ObstacleChunk::POSITION_ANGLE)
+      .value("ANGLE", ObstacleChunk::ANGLE)
+      .value("WIDTH", ObstacleChunk::WIDTH)
+      .value("HEIGHT", ObstacleChunk::HEIGHT)
+      .value("Size", ObstacleChunk::Size);
     py::class_<Env>(m, "Env")
         .def(py::init<unsigned int, unsigned int, size_t>())
         .def("damage_tank",

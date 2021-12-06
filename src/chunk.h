@@ -43,8 +43,21 @@ enum struct BulletChunk {
   Size // Keep this member the last one
 };
 
+enum struct ObstacleChunk {
+  POSITION_DISTANCE,
+  POSITION_X,
+  POSITION_Y,
+  POSITION_ANGLE,
+  ANGLE,
+  WIDTH,
+  HEIGHT,
+  Size // Keep this member the last one
+};
+
 void writeTankChunk(const Tank* tank, const Tank* hero, float* arr);
 
 void writeHeroChunk(const Tank* hero, float* arr);
 
 void writeBulletChunk(const Bullet* bullet, const Tank* hero, float* arr);
+
+void writeObstacleChunk(const b2Body* obstacle, const Tank* hero, float* arr);

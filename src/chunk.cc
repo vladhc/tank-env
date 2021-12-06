@@ -126,3 +126,51 @@ void writeBulletChunk(const Bullet* bullet, const Tank* hero, float* arr) {
       BulletChunk::VELOCITY_ANGLE,
       normalizeAngle(getAngle(v) - hero->GetAngle(), true));
 }
+
+void writeObstacleProp(float* arr, ObstacleChunk prop, float value) {
+  arr[static_cast<unsigned int>(prop)] = value;
+}
+
+
+void writeObstacleChunk(const b2Body* obstacle, const Tank* hero, float* arr) {
+  auto write = std::bind(
+      writeObstacleProp,
+      arr,
+      std::placeholders::_1,
+      std::placeholders::_2);
+
+  const b2Vec2 pos = hero->GetLocalPoint(obstacle->GetPosition());
+  write(
+      ObstacleChunk::POSITION_DISTANCE,
+      pos.Length());
+  write(
+      ObstacleChunk::POSITION_X,
+      pos.x);
+  write(
+      ObstacleChunk::POSITION_Y,
+      pos.y);
+  write(
+      ObstacleChunk::POSITION_ANGLE,
+      normalizeAngle(getAngle(pos), true));
+
+  write(
+      ObstacleChunk::ANGLE,
+      normalizeAngle(obstacle->GetAngle() - hero->GetAngle(), true));
+
+  const b2Fixture* fixture = obstacle->GetFixtureList();
+  const b2Shape* shape = fixture->GetShape();
+  const b2PolygonShape* poly = static_cast<const b2PolygonShape*>(shape);
+
+  std::vector<float> xx;
+  std::vector<float> yy;
+  for (int i=0; i < poly->m_count; i++) {
+    auto pt = poly->m_vertices[i];
+    xx.push_back(pt.x);
+    yy.push_back(pt.y);
+  }
+  const float width = *std::max_element(xx.begin(), xx.end()) - *std::min_element(xx.begin(), xx.end());
+  const float height = *std::max_element(yy.begin(), yy.end()) - *std::min_element(yy.begin(), yy.end());
+
+  write(ObstacleChunk::WIDTH, width);
+  write(ObstacleChunk::HEIGHT, height);
+}
