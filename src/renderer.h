@@ -17,4 +17,5 @@ class Renderer {
     void DrawTank(const Tank& tank);
     void DrawLidar(const Tank& tank);
     void DrawObstacle(const b2Body& obstacle);
+    void DrawBody(const b2Body& shape);
 };

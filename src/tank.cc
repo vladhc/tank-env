@@ -17,7 +17,7 @@ const double ACCELERATION = 10.0f;
 const double FIRE_RANGE = 5.0;
 const double VISION_RANGE = 10.0;
 const float WIDTH = 1.5f;
-const float HEIGHT = 0.75f;
+const float HEIGHT = 1.0f;
 
 Tank::Tank(int id, int teamId, b2World* world) :
     GameObject{TANK},
@@ -50,8 +50,13 @@ Tank::Tank(int id, int teamId, b2World* world) :
   turret = world->CreateBody(&turretDef);
   turret->SetUserData(this);
 
+  b2CircleShape towerShape;
+  towerShape.m_radius = 0.8;
+  fixtureDef.shape = &towerShape;
+  turret->CreateFixture(&fixtureDef);
+
   b2PolygonShape turretShape;
-  turretShape.SetAsBox(WIDTH * 0.6, HEIGHT * 0.6);
+  turretShape.SetAsBox(0.8, 0.2, b2Vec2{0.75, 0}, 0);
   fixtureDef.shape = &turretShape;
   turret->CreateFixture(&fixtureDef);
 
@@ -115,7 +120,7 @@ const b2Body* Tank::GetBody() const {
   return body;
 }
 
-b2Body* Tank::GetTurret() {
+const b2Body* Tank::GetTurret() const {
   return turret;
 }
 

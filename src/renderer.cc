@@ -10,10 +10,10 @@
 #include "renderer.h"
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 800;
+const int SCREEN_WIDTH = 2 * 800;
+const int SCREEN_HEIGHT = 2 * 800;
 
-const float SCALE = 15.0f;
+const float SCALE = 2 * 15.0f;
 const int OFFSET_X = SCREEN_WIDTH / 2;
 const int OFFSET_Y = SCREEN_HEIGHT / 2;
 
@@ -114,24 +114,6 @@ void Renderer::DrawBullet(const Bullet& bullet) {
 }
 
 void Renderer::DrawTank(const Tank& tank) {
-  const b2Vec2 pos = tank.GetPosition();
-  const float angle = tank.GetAngle();
-  const float size = tank.GetSize();
-
-  SDL_Point points[TANK_BODY_POINTS_COUNT];
-
-  // Dark lines (body bottom)
-  for (int i=0; i < TANK_BODY_POINTS_COUNT; i++) {
-    Point pt = TANK_BODY_POINTS[i];
-    pt = Point{
-      pt.x * size,
-      pt.y * size
-    };
-    points[i] = SDL_Point{
-      int((pos.x + pt.x * cos(angle) - pt.y * sin(angle)) * SCALE + OFFSET_X),
-      int((pos.y + pt.y * cos(angle) + pt.x * sin(angle)) * SCALE + OFFSET_Y)
-    };
-  }
   uint8 alpha = 0xFF;
   if (!tank.IsAlive()) {
     alpha = 0x88;
@@ -141,28 +123,8 @@ void Renderer::DrawTank(const Tank& tank) {
   } else {
     SDL_SetRenderDrawColor(gRenderer, 0x11, 0xEC, 0x11, alpha);
   }
-  SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
-
-  // Light lines (turret top)
-  const float turretAngle = tank.GetTurretAngle();
-  SDL_Point turretPoints[TANK_TURRET_POINTS_COUNT];
-  for (int i=0; i < TANK_TURRET_POINTS_COUNT; i++) {
-    Point pt = Point{
-      TANK_TURRET_POINTS[i].x * size,
-      TANK_TURRET_POINTS[i].y * size
-    };
-    turretPoints[i] = SDL_Point{
-      int((pos.x + pt.x * cos(turretAngle) - pt.y * sin(turretAngle)) * SCALE + OFFSET_X),
-      int((pos.y + pt.y * cos(turretAngle) + pt.x * sin(turretAngle)) * SCALE + OFFSET_Y)
-    };
-    turretPoints[i].y = turretPoints[i].y - int(TANK_LAYER_OFFSET * SCALE);
-  }
-  if (tank.GetTeamId() == 0) {
-    SDL_SetRenderDrawColor(gRenderer, 0x71, 0x71, 0xEC, alpha);
-  } else {
-    SDL_SetRenderDrawColor(gRenderer, 0x11, 0xEC, 0x11, alpha);
-  }
-  SDL_RenderDrawLines(gRenderer, turretPoints, TANK_TURRET_POINTS_COUNT);
+  DrawBody(*tank.GetBody());
+  DrawBody(*tank.GetTurret());
 }
 
 void Renderer::DrawLidar(const Tank& tank) {
@@ -182,19 +144,48 @@ void Renderer::DrawLidar(const Tank& tank) {
 
 void Renderer::DrawObstacle(const b2Body& obstacle) {
   SDL_SetRenderDrawColor(gRenderer, 0x73, 0x6E, 0x74, 0xFF);
+  DrawBody(obstacle);
+}
 
-  const b2Fixture* fixture = obstacle.GetFixtureList();
-  const b2PolygonShape* shape = static_cast<const b2PolygonShape*>(fixture->GetShape());
-  SDL_Point points[shape->m_count + 1];
-  for (unsigned int i=0; i < shape->m_count; i++) {
-    auto pt = obstacle.GetWorldPoint(shape->m_vertices[i]);
-    points[i] = SDL_Point{
-      int(pt.x * SCALE + OFFSET_X),
-      int(pt.y * SCALE + OFFSET_Y)
-    };
+void Renderer::DrawBody(const b2Body& body) {
+  const b2Fixture* fixture = body.GetFixtureList();
+  while (fixture != NULL) {
+    const b2Shape* shape = fixture->GetShape();
+    if (shape->m_type == 0) { // Circle
+      const b2CircleShape* circle = static_cast<const b2CircleShape*>(shape);
+      size_t pointsCount = 32;
+      const float angleDelta = 2 * M_PI / pointsCount;
+      SDL_Point points[pointsCount + 1];
+      for (unsigned int i=0; i < pointsCount; i++) {
+        float angle = angleDelta * i;
+        b2Vec2 pt{
+          circle->m_p.x + circle->m_radius * std::cos(angle),
+          circle->m_p.y + circle->m_radius * std::sin(angle)
+        };
+        pt = body.GetWorldPoint(pt);
+        points[i] = SDL_Point{
+          int(pt.x * SCALE + OFFSET_X),
+          int(pt.y * SCALE + OFFSET_Y)
+        };
+      }
+      points[pointsCount] = points[0];
+      SDL_RenderDrawLines(gRenderer, points, pointsCount + 1);
+    }
+    else if (shape->m_type == 2) {
+      const b2PolygonShape* poly = static_cast<const b2PolygonShape*>(shape);
+      SDL_Point points[poly->m_count + 1];
+      for (unsigned int i=0; i < poly->m_count; i++) {
+        auto pt = body.GetWorldPoint(poly->m_vertices[i]);
+        points[i] = SDL_Point{
+          int(pt.x * SCALE + OFFSET_X),
+          int(pt.y * SCALE + OFFSET_Y)
+        };
+      }
+      points[poly->m_count] = points[0];
+      SDL_RenderDrawLines(gRenderer, points, poly->m_count + 1);
+    }
+    fixture = fixture->GetNext();
   }
-  points[shape->m_count] = points[0];
-  SDL_RenderDrawLines(gRenderer, points, shape->m_count + 1);
 }
 
 void Renderer::Render(const Env &env) {

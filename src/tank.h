@@ -22,7 +22,7 @@ class Tank : public GameObject {
     b2Vec2 GetWorldVector(const b2Vec2& localVector) const;
     float GetSize() const;
     const b2Body* GetBody() const;
-    b2Body* GetTurret();
+    const b2Body* GetTurret() const;
     float GetTurretAngle() const;
     float GetTurretAngularVelocity() const;
     void Drive(float anglePower, float turretAnglePower, float power);
