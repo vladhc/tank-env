@@ -1,7 +1,10 @@
+#include <iostream>
 #include <gtest/gtest.h>
 #include "tank.h"
 #include "env.h"
 #include "chunk.h"
+
+const float ERROR = 0.001;
 
 void assertEq(float* arr, TankChunk prop, float expected) {
   auto idx = static_cast<unsigned int>(prop);
@@ -124,6 +127,28 @@ TEST(ChunkTest, WriteTankChunk) {
 
 }
 
+TEST(ChunkTest, WriteTankChunkBodyAngle) {
+  // GIVEN
+  auto world = new b2World(b2Vec2{});
+  Tank hero = Tank(1, 0, world);
+  hero.SetTransform(b2Vec2{-5., -5.}, M_PI / 4, M_PI);
+
+  Tank tank = Tank(2, 1, world);
+  tank.SetTransform(b2Vec2{5., 0.}, -M_PI / 4, -M_PI / 4);
+
+  float* arr = new float[TankChunk::Size];
+
+  // WHEN
+  writeTankChunk(&tank, &hero, arr);
+
+  // THEN
+  ASSERT_NEAR(
+      arr[static_cast<unsigned int>(TankChunk::BODY_ANGLE)],
+      -M_PI / 2,
+      ERROR
+  );
+}
+
 TEST(ChunkTest, WriteBulletChunk) {
   // GIVEN
   auto world = new b2World(b2Vec2{});
@@ -143,16 +168,15 @@ TEST(ChunkTest, WriteBulletChunk) {
   writeBulletChunk(&bullet, &hero, arr);
 
   // THEN
-  const float error = 0.001;
   ASSERT_NEAR(
       arr[static_cast<unsigned int>(BulletChunk::POSITION_X)],
       -3.,
-      error
+      ERROR
   );
   ASSERT_NEAR(
       arr[static_cast<unsigned int>(BulletChunk::POSITION_Y)],
       0.,
-      error
+      ERROR
   );
   ASSERT_EQ(
       arr[static_cast<unsigned int>(BulletChunk::POSITION_DISTANCE)],
@@ -161,12 +185,12 @@ TEST(ChunkTest, WriteBulletChunk) {
   ASSERT_NEAR(
       arr[static_cast<unsigned int>(BulletChunk::POSITION_ANGLE)],
       M_PI,
-      error
+      ERROR
   );
 
   ASSERT_NEAR(
       arr[static_cast<unsigned int>(BulletChunk::VELOCITY_ANGLE)],
       -M_PI/2,
-      error
+      ERROR
   );
 }

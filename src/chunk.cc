@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <functional>
 #include "geom.h"
 #include "chunk.h"
@@ -31,11 +32,9 @@ void writeTankChunk(const Tank* tank, const Tank* hero, float* arr) {
   write(TankChunk::POSITION_Y, posRelativeToBody.y);
 
   const auto angle = tank->GetAngle();
-  const b2Vec2 unit = b2Vec2{std::cos(angle), std::sin(angle)};
-  const b2Vec2 bodyDirection = hero->GetLocalPoint(unit);
   write(
       TankChunk::BODY_ANGLE,
-      normalizeAngle(getAngle(bodyDirection), true));
+      normalizeAngle(angle - hero->GetAngle(), true));
 
   write(
       TankChunk::TURRET_ANGLE_RELATIVE_TO_BODY,
