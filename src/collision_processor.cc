@@ -72,7 +72,7 @@ void CollisionProcessor::EndContact(b2Contact* contact) {
   c.point->SetOwner(NULL);
 }
 
-bool CollisionProcessor::ShouldCollide (b2Fixture *fixtureA, b2Fixture *fixtureB) {
+bool CollisionProcessor::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB) {
   auto filterA = fixtureA->GetFilterData();
   auto filterB = fixtureB->GetFilterData();
   if ((filterA.maskBits & filterB.categoryBits) == 0 || (filterA.categoryBits & filterB.maskBits) == 0) {

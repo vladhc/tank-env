@@ -116,6 +116,9 @@ Env::~Env() {
   for (Bullet* bullet : bullets) {
     delete bullet;
   }
+  for (b2Body* obstacle : obstacles) {
+    obstacle->GetWorld()->DestroyBody(obstacle);
+  }
   // delete strategicPoint;
   delete collisionProcessor;
   delete world_;

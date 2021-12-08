@@ -72,7 +72,10 @@ Tank::Tank(int id, int teamId, b2World* world) :
 }
 
 Tank::~Tank() {
+  body->GetWorld()->DestroyJoint(joint);
   body->GetWorld()->DestroyBody(body);
+  turret->GetWorld()->DestroyBody(turret);
+  delete lidar;
 }
 
 void Tank::SetTransform(const b2Vec2& position, float angle) {
