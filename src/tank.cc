@@ -24,7 +24,8 @@ Tank::Tank(int id, int teamId, b2World* world) :
     id{id},
     teamId{teamId},
     hitpoints{MAX_HITPOINTS},
-    fire_cooldown{0}
+    fire_cooldown{0},
+    lidar{NULL}
 {
   // Body
   b2BodyDef bodyDef;
@@ -75,7 +76,9 @@ Tank::~Tank() {
   body->GetWorld()->DestroyJoint(joint);
   body->GetWorld()->DestroyBody(body);
   turret->GetWorld()->DestroyBody(turret);
-  delete lidar;
+  if (lidar) {
+    delete lidar;
+  }
 }
 
 void Tank::SetTransform(const b2Vec2& position, float angle) {
