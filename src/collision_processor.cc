@@ -40,13 +40,13 @@ TypedContact ToTypedContact(b2Fixture *fixtureA, b2Fixture *fixtureB) {
       continue;
     }
     switch (gameObj->type) {
-      case TANK:
+      case GameObjectType::TANK:
         c.tank = (Tank*)gameObj;
         break;
-      case STRATEGIC_POINT:
+      case GameObjectType::STRATEGIC_POINT:
         c.point = (StrategicPoint*)gameObj;
         break;
-      case BULLET:
+      case GameObjectType::BULLET:
         c.bullet = (Bullet*)gameObj;
         break;
     }

@@ -4,8 +4,8 @@
 #include "bullet.h"
 
 Bullet::Bullet(b2World* world, b2Vec2 firePosition, b2Vec2 fireDirection, GameObject* owner) :
-  GameObject(BULLET),
-  owner(owner)
+  GameObject{GameObjectType::BULLET},
+  owner{owner}
 {
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;

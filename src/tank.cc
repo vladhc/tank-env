@@ -20,7 +20,7 @@ const float WIDTH = 1.5f;
 const float HEIGHT = 1.0f;
 
 Tank::Tank(int id, int teamId, b2World* world) :
-    GameObject{TANK},
+    GameObject{GameObjectType::TANK},
     id{id},
     teamId{teamId},
     hitpoints{MAX_HITPOINTS},

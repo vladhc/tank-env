@@ -1,6 +1,6 @@
 #pragma once
 
-enum GameObjectType {
+enum struct GameObjectType {
   TANK,
   BULLET,
   STRATEGIC_POINT

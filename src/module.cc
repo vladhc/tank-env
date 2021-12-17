@@ -30,7 +30,7 @@ py::dict encodeObservation(const Observation &obs) {
     for (unsigned int i=0; i < raysSize; i++) {
       const auto ray = rays[i];
       lidarDistanceArr[i] = ray.pt.Length();
-      if (ray.obj != nullptr && ray.obj->type == TANK) {
+      if (ray.obj != nullptr && ray.obj->type == GameObjectType::TANK) {
         lidarTankLocatedArr[i] = 1;
         Tank* t = (Tank*)ray.obj;
         if(t->GetTeamId() != hero->GetTeamId()) {
