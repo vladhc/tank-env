@@ -6,7 +6,6 @@
 #include "action.h"
 #include "tank.h"
 #include "bullet.h"
-#include "strategic_point.h"
 #include "collision_processor.h"
 #include "lidar.h"
 

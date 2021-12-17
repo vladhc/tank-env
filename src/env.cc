@@ -12,7 +12,6 @@
 #include "env.h"
 #include "action.h"
 #include "geom.h"
-#include "strategic_point.h"
 #include "collision_processor.h"
 
 const float ARENA_SIZE = 20.0f;  // meters. w = h = 2 * ARENA_SIZE
@@ -104,8 +103,6 @@ Env::Env(unsigned int tanksCount, unsigned int lidarRaysCount, size_t obstaclesC
     obstacles.push_back(obstacle);
   }
 
-  // strategicPoint = new StrategicPoint(world_, b2Vec2(0.0f, 0.0f));
-
   collisionProcessor = new CollisionProcessor(world_);
 }
 
@@ -119,7 +116,6 @@ Env::~Env() {
   for (b2Body* obstacle : obstacles) {
     obstacle->GetWorld()->DestroyBody(obstacle);
   }
-  // delete strategicPoint;
   delete collisionProcessor;
   delete world_;
 }
@@ -135,7 +131,6 @@ std::vector<Observation> Env::CreateObservations() const {
       heroId,
       GetTanks(),
       ARENA_SIZE,
-      // strategicPoint,
       GetBullets(),
       GetObstacles()
     });
@@ -187,8 +182,6 @@ std::vector<Observation> Env::Reset() {
     alivePrevStep[id] = true;
     tank->Reset();
   }
-
-  // strategicPoint->SetOwner(NULL);
 
   return CreateObservations();
 }
@@ -258,9 +251,6 @@ StepResult Env::Step(const std::map<int, Action> actions) {
       }
       bulletsToDelete.push_back(c.bullet);
     }
-    if (c.point != NULL) {
-      c.point->SetOwner(c.tank);
-    }
   }
   for (auto bullet : bulletsToDelete) {
     deleteBullet(bullet);
@@ -273,9 +263,6 @@ StepResult Env::Step(const std::map<int, Action> actions) {
   for (const Observation &ob : obs) {
     const Tank* tank = ob.tanks[ob.heroId];
     const int teamId = tank->GetTeamId();
-    /*if (strategicPoint->GetOwner() == tank) {
-      teamRewards[teamId] += 0.1f;
-    }*/
     if (!tank->IsAlive()) {
       teamRewards[teamId] -= 1.0f;
     }
@@ -343,10 +330,6 @@ std::vector<const Bullet*> Env::GetBullets() const {
   }
   return bulletsImmutable;
 }
-
-/*const StrategicPoint* Env::GetStrategicPoint() const {
-  return strategicPoint;
-}*/
 
 float Env::GetArenaSize() const {
   return ARENA_SIZE;

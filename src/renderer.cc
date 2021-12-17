@@ -5,7 +5,6 @@
 #include "env.h"
 #include "lidar.h"
 #include "point.h"
-// #include "strategic_point.h"
 #include "bullet.h"
 #include "renderer.h"
 
@@ -87,19 +86,6 @@ void Renderer::DrawArena(float size) {
   SDL_SetRenderDrawColor(gRenderer, 0x73, 0x6E, 0x74, 0xFF);
   SDL_RenderDrawLines(gRenderer, points, TANK_BODY_POINTS_COUNT);
 }
-
-/*void Renderer::DrawStrategicPoint(const StrategicPoint& point) {
-  b2Vec2 pos = point.GetPosition();
-  SDL_SetRenderDrawColor(gRenderer, 0x72, 0x72, 0x18, 0x80);
-  SDL_Rect rect{
-    int(pos.x * SCALE - 2 + OFFSET_X),
-    int(pos.y * SCALE - 2 + OFFSET_Y),
-    4,
-    4
-  };
-
-  SDL_RenderFillRect(gRenderer, &rect);
-}*/
 
 void Renderer::DrawBullet(const Bullet& bullet) {
   b2Vec2 pos = bullet.GetPosition();
@@ -190,7 +176,6 @@ void Renderer::DrawBody(const b2Body& body) {
 
 void Renderer::Render(const Env &env) {
   SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF );
-  // SDL_SetRenderDrawColor(gRenderer, 0xBC, 0xB6, 0x54, 0xFF );
   SDL_RenderClear(gRenderer);
   DrawArena(env.GetArenaSize());
 
@@ -207,6 +192,5 @@ void Renderer::Render(const Env &env) {
     DrawObstacle(*obstacle);
   }
 
-  // DrawStrategicPoint(*env.GetStrategicPoint());
   SDL_RenderPresent(gRenderer);
 }

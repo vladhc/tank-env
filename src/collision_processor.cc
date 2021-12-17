@@ -2,7 +2,6 @@
 #include "box2d/box2d.h"
 #include "tank.h"
 #include "collision_processor.h"
-#include "strategic_point.h"
 #include "game_object.h"
 #include "bullet.h"
 
@@ -31,7 +30,7 @@ bool CollisionProcessor::PollEvent(TypedContact* ptr) {
 }
 
 TypedContact ToTypedContact(b2Fixture *fixtureA, b2Fixture *fixtureB) {
-  TypedContact c{NULL, NULL, NULL};
+  TypedContact c{NULL, NULL};
 
   b2Fixture* fixtures[] = {fixtureA, fixtureB};
   for (b2Fixture* fixture : fixtures) {
@@ -42,9 +41,6 @@ TypedContact ToTypedContact(b2Fixture *fixtureA, b2Fixture *fixtureB) {
     switch (gameObj->type) {
       case GameObjectType::TANK:
         c.tank = (Tank*)gameObj;
-        break;
-      case GameObjectType::STRATEGIC_POINT:
-        c.point = (StrategicPoint*)gameObj;
         break;
       case GameObjectType::BULLET:
         c.bullet = (Bullet*)gameObj;
@@ -66,10 +62,9 @@ void CollisionProcessor::BeginContact(b2Contact* contact) {
 
 void CollisionProcessor::EndContact(b2Contact* contact) {
   TypedContact c = ToTypedContact(contact);
-  if (c.point == NULL || c.tank == NULL) {
+  if (c.tank == NULL) {
     return;
   }
-  c.point->SetOwner(NULL);
 }
 
 bool CollisionProcessor::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB) {

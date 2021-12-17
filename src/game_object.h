@@ -2,8 +2,7 @@
 
 enum struct GameObjectType {
   TANK,
-  BULLET,
-  STRATEGIC_POINT
+  BULLET
 };
 
 class GameObject {
