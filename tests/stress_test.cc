@@ -26,15 +26,9 @@ TEST(EnvTest, DoesntExportBulletsOutsideOfArena) {
       }
 
       // WHEN
-      std::tuple<
-        std::vector<Observation>,
-        std::vector<float>,
-        std::vector<char>
-      > step = env.Step(actions);
+      auto step = env.Step(actions);
 
       // THEN
-      auto obs = std::get<0>(step);
-
       unsigned int aliveTanksCount = 0;
       for (auto tank : tanks) {
         if (tank->IsAlive()) {

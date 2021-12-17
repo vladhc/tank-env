@@ -65,7 +65,7 @@ TEST(EnvTest, DeadTankIsReturnedOnce) {
 
   // THEN
   bool tankExported = false;
-  for (Observation obs : std::get<0>(step1)) {
+  for (Observation obs : step1.observations) {
     if (obs.heroId == tankId) {
       tankExported = true;
       break;
@@ -74,7 +74,7 @@ TEST(EnvTest, DeadTankIsReturnedOnce) {
   EXPECT_TRUE(tankExported);
 
   tankExported = false;
-  for (Observation obs : std::get<0>(step2)) {
+  for (Observation obs : step2.observations) {
     if (obs.heroId == tankId) {
       tankExported = true;
       break;
@@ -101,18 +101,14 @@ TEST(EnvTest, DeadTankIsDoneAndPunished) {
   auto step = env.Step(actions);
 
   // THEN
-  auto observations = std::get<0>(step);
-  auto rewards = std::get<1>(step);
-  auto dones = std::get<2>(step);
-
   float reward = 0;
   bool done = false;
 
-  for (int i=0; i < observations.size(); i++) {
-    Observation obs = observations[i];
+  for (int i=0; i < step.observations.size(); i++) {
+    Observation obs = step.observations[i];
     if (obs.heroId == tankId) {
-      reward = rewards[i];
-      done = dones[i];
+      reward = step.rewards[i];
+      done = step.dones[i];
       break;
     }
   }
@@ -241,7 +237,7 @@ TEST(EnvTest, TwoBulletsCollidingDisappear) {
 
   // THEN
   auto step = env.Step(actions);
-  std::vector<Observation> obs = std::get<0>(step);
+  std::vector<Observation> obs = step.observations;
   ASSERT_EQ(obs[0].bullets.size(), 0);
 
   auto tanks = env.GetTanks();

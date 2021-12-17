@@ -18,9 +18,14 @@ struct Observation {
   const int heroId;
   const std::vector<const Tank*> tanks;
   const float arenaSize;
-  // const StrategicPoint* strategicPoint;
   const std::vector<const Bullet*> bullets;
   const std::vector<const b2Body*> obstacles;
+};
+
+struct StepResult {
+  std::vector<Observation> observations;
+  std::vector<float> rewards;
+  std::vector<char> dones;
 };
 
 class Env {
@@ -28,16 +33,11 @@ class Env {
     Env(unsigned int tanksCount, unsigned int lidarRaysCount, size_t obstaclesCount);
     ~Env();
     std::vector<Observation> Reset();
-    std::tuple<
-      std::vector<Observation>,
-      std::vector<float>,
-      std::vector<char>
-    > Step(const std::map<int, Action> actions);
+    StepResult Step(const std::map<int, Action> actions);
     std::vector<const Tank*> GetTanks() const;
     std::vector<const b2Body*> GetObstacles() const;
     void DamageTank(int tankId, unsigned int damage);
     void SetTransform(int tankId, const b2Vec2& pos, float bodyAngle, float turretAngle);
-    // const StrategicPoint* GetStrategicPoint() const;
     float GetArenaSize() const;
     std::vector<const Bullet*> GetBullets() const;
     bool EpisodeComplete() const;
@@ -47,7 +47,6 @@ class Env {
     std::vector<Bullet*> bullets;
     std::vector<b2Body*> obstacles;
     b2World* world_;
-    // StrategicPoint* strategicPoint;
     CollisionProcessor* collisionProcessor;
     void deleteBullet(Bullet* bullet);
     std::vector<char> alivePrevStep; // tankId -> wasAlivePreviousStep

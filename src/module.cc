@@ -65,11 +65,6 @@ py::dict encodeObservation(const Observation &obs) {
       idx++;
     }
 
-    // StrategicPoint
-    // b2Vec2 pos = hero->GetLocalPoint(obs.strategicPoint->GetPosition());
-    // ret[idx++] = pos.Length();
-    // ret[idx++] = normalizeAngle(atan2(pos.x, pos.y), true);
-
     unsigned int bulletChunkSize = static_cast<unsigned int>(BulletChunk::Size);
     py::list bulletsObs{obs.bullets.size()};
     for (unsigned int i=0; i < obs.bullets.size(); i++) {
@@ -192,14 +187,10 @@ PYBIND11_MODULE(tanks, m) {
                 actions[item.first] = Action{action[0], action[1], action[2], action[3] > 0.};
               }
 
-              std::tuple<
-                std::vector<Observation>,
-                std::vector<float>,
-                std::vector<char>
-              > t = env.Step(actions);
-              std::vector<Observation> obs = std::get<0>(t);
-              std::vector<float> rewards = std::get<1>(t);
-              std::vector<char> dones = std::get<2>(t);
+              auto t = env.Step(actions);
+              std::vector<Observation> obs = t.observations;
+              std::vector<float> rewards = t.rewards;
+              std::vector<char> dones = t.dones;
 
               py::dict obsMap;
               py::dict rewardsMap;

@@ -204,11 +204,7 @@ void Env::deleteBullet(Bullet* bullet) {
   }
 }
 
-std::tuple<
-  std::vector<Observation>,
-  std::vector<float>,
-  std::vector<char>
-> Env::Step(const std::map<int, Action> actions) {
+StepResult Env::Step(const std::map<int, Action> actions) {
 
   // Apply actions
   for (const auto &x : actions) {
@@ -303,7 +299,7 @@ std::tuple<
     alivePrevStep[id] = tank->IsAlive();
   }
 
-  return std::make_tuple(obs, rewards, dones);
+  return StepResult{obs, rewards, dones};
 }
 
 std::vector<const Tank*> Env::GetTanks() const {
